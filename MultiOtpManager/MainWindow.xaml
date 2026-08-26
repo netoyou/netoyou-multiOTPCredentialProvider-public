@@ -257,6 +257,7 @@
                                 <Button x:Name="LockBtn" Content="Lock" Click="LockBtn_Click" Margin="0,0,6,0" />
                                 <Button x:Name="UnlockBtn" Content="Unlock" Click="UnlockBtn_Click" Margin="0,0,6,0" />
                                 <Button x:Name="ResyncBtn" Content="Resync" Click="ResyncBtn_Click" Margin="0,0,6,0" />
+                                <Button x:Name="QrCodeBtn" Content="QR Code" Click="QrCodeBtn_Click" Margin="0,0,6,0" />
                                 <Button x:Name="DeleteUserBtn" Content="Delete" Click="DeleteUserBtn_Click" Margin="0,0,6,0" Foreground="#A33131" />
                             </StackPanel>
                         </Grid>

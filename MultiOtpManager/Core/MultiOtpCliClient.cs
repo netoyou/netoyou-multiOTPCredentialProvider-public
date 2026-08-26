@@ -142,6 +142,21 @@ namespace MultiOtpManager.Core
             return executor.ExecuteAsync(new List<string> { "-lockeduserslist" }, timeout, ct);
         }
 
+        // --- Provisioning ---
+
+        public Task<ProcessRunResult> GetUrlLinkAsync(string username, TimeSpan timeout, CancellationToken ct)
+        {
+            ValidateRequiredText(username, "username");
+            return executor.ExecuteAsync(new List<string> { "-urllink", username }, timeout, ct);
+        }
+
+        public Task<ProcessRunResult> CreateQrCodeAsync(string username, string pngFilePath, TimeSpan timeout, CancellationToken ct)
+        {
+            ValidateRequiredText(username, "username");
+            ValidateRequiredText(pngFilePath, "PNG file path");
+            return executor.ExecuteAsync(new List<string> { "-qrcode", username, pngFilePath }, timeout, ct);
+        }
+
         // --- Token Management ---
 
         public Task<ProcessRunResult> GetTokensAsync(TimeSpan timeout, CancellationToken ct)

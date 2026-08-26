@@ -1,12 +1,14 @@
 using MultiOtpManager.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace MultiOtpManager
 {
@@ -32,7 +34,7 @@ namespace MultiOtpManager
             actionButtons = new[]
             {
                 VerifyButton, RefreshUsersButton, CreateUserButton,
-                ActivateBtn, DeactivateBtn, LockBtn, UnlockBtn, ResyncBtn, DeleteUserBtn,
+                ActivateBtn, DeactivateBtn, LockBtn, UnlockBtn, ResyncBtn, QrCodeBtn, DeleteUserBtn,
                 RefreshTokensButton, AssignTokenBtn, RemoveTokenBtn, DeleteTokenBtn,
                 ShowLogBtn, ClearLogBtn, ErrorCodesBtn, VersionBtn,
                 LdapCheckBtn, LdapUsersListBtn, LdapSyncBtn,
@@ -219,6 +221,76 @@ namespace MultiOtpManager
             catch (Exception error)
             {
                 SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void QrCodeBtn_Click(object sender, RoutedEventArgs e)
+        {
+            UserSummary summary = UsersListBox.SelectedItem as UserSummary;
+            if (summary == null)
+            {
+                SetStatus("Select a user to show the provisioning QR code.");
+                return;
+            }
+
+            // The PNG embeds the token secret; write it to a temp file and
+            // delete it as soon as the pixels are loaded in memory.
+            string tempFile = Path.Combine(Path.GetTempPath(), "multiotp_qrcode_" + Guid.NewGuid().ToString("N") + ".png");
+
+            try
+            {
+                ProcessRunResult urlResult = await RunOperationAsync(
+                    "read provisioning URL",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.GetUrlLinkAsync(summary.Name, GetTimeout(), token);
+                    });
+
+                string urlLink = (urlResult.StandardOutput ?? string.Empty).Trim();
+                bool urlUsable = IsSuccessCode(urlResult.ExitCode) &&
+                    (urlLink.StartsWith("otpauth://", StringComparison.OrdinalIgnoreCase) ||
+                     urlLink.StartsWith("motp://", StringComparison.OrdinalIgnoreCase));
+
+                if (!urlUsable)
+                {
+                    UserDetailBox.Text = BuildCombinedOutput(urlResult);
+                    SetStatus("This token cannot be provisioned with a QR code. " + GetFriendlyExitText(urlResult.ExitCode));
+                    return;
+                }
+
+                BitmapImage qrImage = null;
+                ProcessRunResult qrResult = await RunOperationAsync(
+                    "create QR code",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.CreateQrCodeAsync(summary.Name, tempFile, GetTimeout(), token);
+                    });
+
+                if (IsSuccessCode(qrResult.ExitCode) && File.Exists(tempFile))
+                {
+                    try
+                    {
+                        qrImage = LoadImageFile(tempFile);
+                    }
+                    catch (Exception)
+                    {
+                        qrImage = null;
+                    }
+                }
+
+                string imageError = qrImage == null ? GetFriendlyExitText(qrResult.ExitCode) : null;
+                QrCodeDialog dialog = new QrCodeDialog(summary.Name, qrImage, urlLink, imageError);
+                dialog.Owner = this;
+                dialog.ShowDialog();
+                SetStatus("Provisioning information shown for " + summary.Name + ".");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+            finally
+            {
+                TryDeleteFile(tempFile);
             }
         }
 
@@ -977,6 +1049,38 @@ namespace MultiOtpManager
             StatusText.Text = status;
         }
 
+        private static BitmapImage LoadImageFile(string path)
+        {
+            // Load with OnLoad so the file handle is released immediately.
+            BitmapImage image = new BitmapImage();
+            using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.StreamSource = stream;
+                image.EndInit();
+            }
+            image.Freeze();
+            return image;
+        }
+
+        private static void TryDeleteFile(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+
         private static bool IsSuccessCode(int exitCode)
         {
             // multiOTP returns 0 for OK and 11-19 for successful INFO operations.
@@ -1234,6 +1338,111 @@ namespace MultiOtpManager
                     }
                     return values;
                 }
+            }
+        }
+
+        // Modal dialog showing the provisioning QR code and the otpauth URL.
+        private sealed class QrCodeDialog : Window
+        {
+            public QrCodeDialog(string username, BitmapImage qrImage, string urlLink, string imageError)
+            {
+                Title = "Provisioning - " + username;
+                Width = 460;
+                SizeToContent = SizeToContent.Height;
+                WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                ResizeMode = ResizeMode.NoResize;
+                ShowInTaskbar = false;
+                Background = new SolidColorBrush(Color.FromRgb(0xF3, 0xF5, 0xF7));
+
+                StackPanel root = new StackPanel();
+                root.Margin = new Thickness(16);
+
+                TextBlock hint = new TextBlock();
+                hint.Text = "Scan the code with Google Authenticator, FreeOTP or any compatible authenticator app. The code contains the token secret: do not share it.";
+                hint.TextWrapping = TextWrapping.Wrap;
+                hint.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0x30, 0x38));
+                hint.Margin = new Thickness(0, 0, 0, 12);
+                root.Children.Add(hint);
+
+                if (qrImage != null)
+                {
+                    Image image = new Image();
+                    image.Source = qrImage;
+                    image.Width = 260;
+                    image.Height = 260;
+                    image.Stretch = Stretch.Uniform;
+                    image.HorizontalAlignment = HorizontalAlignment.Center;
+
+                    Border frame = new Border();
+                    frame.Background = new SolidColorBrush(Colors.White);
+                    frame.BorderBrush = new SolidColorBrush(Color.FromRgb(0xD5, 0xDB, 0xE1));
+                    frame.BorderThickness = new Thickness(1);
+                    frame.Padding = new Thickness(12);
+                    frame.HorizontalAlignment = HorizontalAlignment.Center;
+                    frame.Margin = new Thickness(0, 0, 0, 12);
+                    frame.Child = image;
+                    root.Children.Add(frame);
+                }
+                else
+                {
+                    TextBlock imageNote = new TextBlock();
+                    imageNote.Text = "The QR image could not be generated (" + imageError + "). Use the provisioning URL below instead.";
+                    imageNote.TextWrapping = TextWrapping.Wrap;
+                    imageNote.Foreground = new SolidColorBrush(Color.FromRgb(0xA3, 0x31, 0x31));
+                    imageNote.Margin = new Thickness(0, 0, 0, 12);
+                    root.Children.Add(imageNote);
+                }
+
+                TextBlock urlCaption = new TextBlock();
+                urlCaption.Text = "PROVISIONING URL";
+                urlCaption.FontSize = 11;
+                urlCaption.Foreground = new SolidColorBrush(Color.FromRgb(0x61, 0x70, 0x7B));
+                urlCaption.Margin = new Thickness(0, 0, 0, 3);
+                root.Children.Add(urlCaption);
+
+                TextBox urlBox = new TextBox();
+                urlBox.IsReadOnly = true;
+                urlBox.Text = urlLink;
+                urlBox.TextWrapping = TextWrapping.Wrap;
+                urlBox.Height = 56;
+                urlBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                urlBox.Margin = new Thickness(0, 0, 0, 10);
+                root.Children.Add(urlBox);
+
+                StackPanel buttons = new StackPanel();
+                buttons.Orientation = Orientation.Horizontal;
+                buttons.HorizontalAlignment = HorizontalAlignment.Right;
+                buttons.Margin = new Thickness(0, 6, 0, 0);
+
+                Button copyButton = new Button();
+                copyButton.Content = "Copy URL";
+                copyButton.MinWidth = 88;
+                copyButton.Height = 30;
+                copyButton.Margin = new Thickness(0, 0, 6, 0);
+                copyButton.Click += delegate
+                {
+                    try
+                    {
+                        Clipboard.SetText(urlLink);
+                        copyButton.Content = "Copied";
+                    }
+                    catch (Exception)
+                    {
+                        copyButton.Content = "Copy failed";
+                    }
+                };
+
+                Button closeButton = new Button();
+                closeButton.Content = "Close";
+                closeButton.IsCancel = true;
+                closeButton.MinWidth = 88;
+                closeButton.Height = 30;
+
+                buttons.Children.Add(copyButton);
+                buttons.Children.Add(closeButton);
+                root.Children.Add(buttons);
+
+                Content = root;
             }
         }
     }
