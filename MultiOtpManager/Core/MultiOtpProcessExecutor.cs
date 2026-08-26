@@ -182,7 +182,7 @@ namespace MultiOtpManager.Core
                     {
                         timedOut = !cancellationToken.IsCancellationRequested;
                         TryStopProcess(process);
-                        exitWaiter.TrySetCanceled(linkedSource.Token);
+                        exitWaiter.TrySetCanceled();
                     }))
                     {
                         await exitWaiter.Task.ConfigureAwait(false);
