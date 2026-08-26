@@ -1,0 +1,94 @@
+name: Windows build
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
+
+env:
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  credential-provider:
+    name: Credential Provider (${{ matrix.artifactName }})
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: x64
+            artifactName: x64
+          - platform: Win32
+            artifactName: x86
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v4
+
+      - name: Locate MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build solution
+        shell: pwsh
+        run: >
+          msbuild multiOTPCredentialProvider.sln
+          /m
+          /nologo
+          /p:Configuration=${{ env.BUILD_CONFIGURATION }}
+          /p:Platform=${{ matrix.platform }}
+          /p:PlatformToolset=v143
+          /bl:${{ github.workspace }}\msbuild-${{ matrix.artifactName }}.binlog
+
+      - name: Upload ${{ matrix.artifactName }} artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: multiotp-credential-provider-${{ matrix.artifactName }}
+          if-no-files-found: error
+          path: |
+            CredentialProvider/${{ matrix.platform }}/${{ env.BUILD_CONFIGURATION }}/*.dll
+            CredentialProviderFilter/${{ matrix.platform }}/${{ env.BUILD_CONFIGURATION }}/*.dll
+            CppClientCore/CppClientCore/${{ matrix.platform }}/${{ env.BUILD_CONFIGURATION }}/*.lib
+            WixInstall/multiOTPCredentialProviderInstaller/bin/${{ matrix.artifactName }}/${{ env.BUILD_CONFIGURATION }}/*.msi
+            msbuild-${{ matrix.artifactName }}.binlog
+
+  wpf-manager:
+    name: WPF manager
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v4
+
+      - name: Locate MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install .NET Framework 4.5.2 Developer Pack
+        shell: pwsh
+        run: choco install netfx-4.5.2-devpack --no-progress -y
+
+      - name: Build manager
+        shell: pwsh
+        run: >
+          msbuild MultiOtpManager/MultiOtpManager.csproj
+          /m
+          /nologo
+          /p:Configuration=${{ env.BUILD_CONFIGURATION }}
+          /p:Platform=AnyCPU
+          /bl:${{ github.workspace }}\msbuild-manager.binlog
+
+      - name: Upload manager artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: multiotp-manager
+          if-no-files-found: error
+          path: |
+            MultiOtpManager/bin/${{ env.BUILD_CONFIGURATION }}/*
+            msbuild-manager.binlog
