@@ -95,19 +95,20 @@ namespace MultiOtpManager
 
             try
             {
-                // Single-field creation maps to -fastcreate: TOTP token compatible
-                // with Google Authenticator; multiOTP generates a random prefix PIN.
+                // Single-field creation maps to -fastcreatenopin: a TOTP token
+                // compatible with Google Authenticator and no prefix PIN, so the
+                // user can authenticate with just the 6-digit code from their app.
                 ProcessRunResult result = await RunOperationAsync(
                     "create user",
                     delegate(CancellationToken token)
                     {
-                        return cliClient.FastCreateUserAsync(username, null, GetTimeout(), token);
+                        return cliClient.FastCreateNoPinUserAsync(username, GetTimeout(), token);
                     });
 
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus("User " + username + " created (TOTP token with a generated PIN).");
+                    SetStatus("User " + username + " created (TOTP token, no prefix PIN).");
                     NewUsernameBox.Text = string.Empty;
                     await LoadUsersAsync();
                 }
@@ -1212,6 +1213,66 @@ namespace MultiOtpManager
                     return "A file is missing.";
                 case 59:
                     return "The restore password is incorrect.";
+                case 60:
+                    return "No information on where to send the SMS code.";
+                case 61:
+                    return "An error occurred while sending the SMS code.";
+                case 62:
+                    return "The SMS provider is not supported.";
+                case 63:
+                    return "The SMS code has expired.";
+                case 64:
+                    return "The SMS code cannot be resent right now.";
+                case 65:
+                    return "The SMS code request is not allowed.";
+                case 66:
+                    return "The email code request is not allowed.";
+                case 67:
+                    return "No information on where to send the email code.";
+                case 68:
+                    return "An error occurred while sending the email code.";
+                case 69:
+                    return "Failed to send the email.";
+                case 70:
+                    return "Server authentication error.";
+                case 71:
+                    return "Server request is not correctly formatted.";
+                case 72:
+                    return "Server answer is not correctly formatted.";
+                case 73:
+                    return "Email SMTP server is not defined.";
+                case 79:
+                    return "AD/LDAP connection error.";
+                case 80:
+                    return "Server cache error.";
+                case 81:
+                    return "Cache too old for this user, account autolocked.";
+                case 82:
+                    return "User is not allowed for this device.";
+                case 88:
+                    return "Device is not defined as a HA slave.";
+                case 89:
+                    return "Device is not defined as a HA master.";
+                case 90:
+                    return "AD/LDAP authentication failed.";
+                case 91:
+                    return "Authentication failed (without2FA token not authorized here).";
+                case 92:
+                    return "Authentication failed (bad password).";
+                case 93:
+                    return "Authentication failed (time based token probably out of sync).";
+                case 94:
+                    return "API request error.";
+                case 95:
+                    return "API authentication failed.";
+                case 96:
+                    return "Push authentication timeout.";
+                case 97:
+                    return "Push authentication denied.";
+                case 98:
+                    return "Authentication failed (wrong token length).";
+                case 99:
+                    return "Authentication failed (unknown error).";
                 default:
                     return "Exit code " + exitCode + ".";
             }
