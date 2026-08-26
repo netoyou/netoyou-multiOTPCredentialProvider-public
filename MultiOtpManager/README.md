@@ -14,12 +14,17 @@ Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "multiotp.exe")
 
 The manifest requests `requireAdministrator`, because changing credential-provider registry values requires elevation. It declares Windows 7 and later as supported operating systems.
 
-## MVP functions
+## Functions
 
 - Authentication test: bundled multiOTP 5.10.2.2 uses the default check syntax `multiotp.exe username otp`. `MultiOtpCliClient.UseVerifySwitch` can be set to `true` for a CLI build that accepts `-verify username otp`.
-- Users: `multiotp.exe -userslist`
-- User details: `multiotp.exe -user-info username`
-- Credential Provider settings: `cpus_logon`, `cpus_unlock`, and `two_step_hide_otp`
+- Users: list (`-userslist`), details (`-user-info`), create (`-fastcreate`), activate, deactivate, lock, unlock, resync (two consecutive OTP codes), delete.
+- Tokens: list (`-tokenslist`), assign (`-assign-token`), remove (`-remove-token`), delete (`-delete-token`).
+- Logs & diagnostics: show log (`-showlog`), clear log (`-clearlog`), error codes (`-error-codes`), version (`-version`).
+- AD/LDAP: connection check (`-ldap-check`), user list (`-ldap-users-list`), user sync (`-ldap-users-sync`). LDAP calls enforce a minimum 30 second timeout because directory queries can be slow.
+- Credential Provider settings: `cpus_logon`, `cpus_unlock`, and `two_step_hide_otp`.
+- Maintenance: encrypted backup/restore of the configuration (`-backup-config` / `-restore-config`), purge lock folder (`-purge-lock-folder`), purge LDAP cache (`-purge-ldap-cache-folder`).
+
+Destructive operations (delete, clear log, restore, purge, LDAP sync) ask for confirmation before running. Backup and restore passwords are kept in memory only, never logged, and cleared from the input field right after the operation.
 
 When these registry values are absent, the GUI follows the installer's `3d` default (no active multiOTP prompt for that usage scenario) rather than silently enabling 2FA.
 

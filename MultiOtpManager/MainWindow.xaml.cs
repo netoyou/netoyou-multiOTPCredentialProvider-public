@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace MultiOtpManager
 {
@@ -13,6 +14,7 @@ namespace MultiOtpManager
     {
         private readonly MultiOtpCliClient cliClient;
         private readonly CredentialProviderRegistryService registryService;
+        private Button[] actionButtons;
         private CancellationTokenSource currentOperationCancellation;
         private bool refreshingUsers;
 
@@ -27,8 +29,19 @@ namespace MultiOtpManager
         {
             ExecutablePathText.Text = cliClient.ExecutablePath;
             ExecutablePathText.ToolTip = cliClient.ExecutablePath;
+            actionButtons = new[]
+            {
+                VerifyButton, RefreshUsersButton, CreateUserButton,
+                ActivateBtn, DeactivateBtn, LockBtn, UnlockBtn, ResyncBtn, DeleteUserBtn,
+                RefreshTokensButton, AssignTokenBtn, RemoveTokenBtn, DeleteTokenBtn,
+                ShowLogBtn, ClearLogBtn, ErrorCodesBtn, VersionBtn,
+                LdapCheckBtn, LdapUsersListBtn, LdapSyncBtn,
+                SaveSettingsButton, BackupBtn, RestoreBtn, PurgeLockBtn, PurgeLdapCacheBtn
+            };
             LoadSettings();
         }
+
+        // --- Authentication ---
 
         private async void VerifyButton_Click(object sender, RoutedEventArgs e)
         {
@@ -61,52 +74,49 @@ namespace MultiOtpManager
             }
         }
 
+        // --- Users ---
+
         private async void RefreshUsersButton_Click(object sender, RoutedEventArgs e)
         {
-            refreshingUsers = true;
-            UsersListBox.SelectedItem = null;
-            ClearUserDetail();
+            await LoadUsersAsync();
+        }
+
+        private async void CreateUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            string username = NewUsernameBox.Text.Trim();
+            if (username.Length == 0)
+            {
+                SetStatus("Enter a name for the new user.");
+                NewUsernameBox.Focus();
+                return;
+            }
 
             try
             {
+                // Single-field creation maps to -fastcreate: TOTP token compatible
+                // with Google Authenticator; multiOTP generates a random prefix PIN.
                 ProcessRunResult result = await RunOperationAsync(
-                    "load users",
+                    "create user",
                     delegate(CancellationToken token)
                     {
-                        return cliClient.GetUsersAsync(GetTimeout(), token);
+                        return cliClient.FastCreateUserAsync(username, null, GetTimeout(), token);
                     });
 
-                if (result.ExitCode != 0 && result.ExitCode != 19)
+                UserDetailBox.Text = BuildCombinedOutput(result);
+                if (IsSuccessCode(result.ExitCode))
                 {
-                    UserDetailBox.Text = BuildCombinedOutput(result);
-                    SetStatus("User list command failed. Exit code: " + result.ExitCode);
-                    return;
+                    SetStatus("User " + username + " created (TOTP token with a generated PIN).");
+                    NewUsernameBox.Text = string.Empty;
+                    await LoadUsersAsync();
                 }
-
-                List<string> users = result.StandardOutput
-                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(delegate(string line) { return line.Trim(); })
-                    .Where(delegate(string line) { return line.Length > 0; })
-                    .ToList();
-
-                UsersListBox.ItemsSource = users
-                    .Select(delegate(string user) { return new UserSummary { Name = user }; })
-                    .ToList();
-
-                if (UsersListBox.Items.Count == 0)
+                else
                 {
-                    UserDetailBox.Text = "No users were returned.";
+                    SetStatus("User creation failed. " + GetFriendlyExitText(result.ExitCode));
                 }
-
-                SetStatus(users.Count.ToString() + " user(s) loaded.");
             }
             catch (Exception error)
             {
                 SetStatus(GetSafeExceptionMessage(error));
-            }
-            finally
-            {
-                refreshingUsers = false;
             }
         }
 
@@ -124,6 +134,187 @@ namespace MultiOtpManager
                 return;
             }
 
+            await LoadUserDetailsAsync(summary);
+        }
+
+        private async void ActivateBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await RunSelectedUserActionAsync("activate", delegate(string user, CancellationToken token)
+            {
+                return cliClient.ActivateUserAsync(user, GetTimeout(), token);
+            });
+        }
+
+        private async void DeactivateBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await RunSelectedUserActionAsync("deactivate", delegate(string user, CancellationToken token)
+            {
+                return cliClient.DeactivateUserAsync(user, GetTimeout(), token);
+            });
+        }
+
+        private async void LockBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await RunSelectedUserActionAsync("lock", delegate(string user, CancellationToken token)
+            {
+                return cliClient.LockUserAsync(user, GetTimeout(), token);
+            });
+        }
+
+        private async void UnlockBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await RunSelectedUserActionAsync("unlock", delegate(string user, CancellationToken token)
+            {
+                return cliClient.UnlockUserAsync(user, GetTimeout(), token);
+            });
+        }
+
+        private async void ResyncBtn_Click(object sender, RoutedEventArgs e)
+        {
+            UserSummary summary = UsersListBox.SelectedItem as UserSummary;
+            if (summary == null)
+            {
+                SetStatus("Select a user to resync.");
+                return;
+            }
+
+            PromptDialog dialog = new PromptDialog(
+                "Resync token",
+                "Enter two consecutive OTP codes generated by the token of " + summary.Name +
+                ". Both codes must be unused.",
+                new[] { "FIRST OTP CODE", "SECOND OTP CODE" });
+            dialog.Owner = this;
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            string[] values = dialog.Values;
+            if (values.Length < 2 || values[0].Length == 0 || values[1].Length == 0)
+            {
+                SetStatus("Two OTP codes are required for resynchronization.");
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "resync token",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.ResyncTokenAsync(summary.Name, values[0], values[1], GetTimeout(), token);
+                    });
+
+                UserDetailBox.Text = BuildCombinedOutput(result);
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    SetStatus("Token resynchronized for " + summary.Name + ".");
+                    await LoadUserDetailsAsync(summary);
+                }
+                else
+                {
+                    SetStatus("Resynchronization failed. " + GetFriendlyExitText(result.ExitCode));
+                }
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void DeleteUserBtn_Click(object sender, RoutedEventArgs e)
+        {
+            UserSummary summary = UsersListBox.SelectedItem as UserSummary;
+            if (summary == null)
+            {
+                SetStatus("Select a user to delete.");
+                return;
+            }
+
+            if (!ConfirmAction(
+                "Delete user " + summary.Name + "? This permanently removes the user and the associated token data.",
+                "Delete user"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "delete user",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.DeleteUserAsync(summary.Name, GetTimeout(), token);
+                    });
+
+                UserDetailBox.Text = BuildCombinedOutput(result);
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    SetStatus("User " + summary.Name + " deleted.");
+                    ClearUserDetail();
+                    await LoadUsersAsync();
+                }
+                else
+                {
+                    SetStatus("Delete failed. " + GetFriendlyExitText(result.ExitCode));
+                }
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async Task LoadUsersAsync()
+        {
+            refreshingUsers = true;
+            UsersListBox.SelectedItem = null;
+            ClearUserDetail();
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "load users",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.GetUsersAsync(GetTimeout(), token);
+                    });
+
+                if (!IsSuccessCode(result.ExitCode))
+                {
+                    UserDetailBox.Text = BuildCombinedOutput(result);
+                    SetStatus("User list command failed. " + GetFriendlyExitText(result.ExitCode));
+                    return;
+                }
+
+                List<UserSummary> users = result.StandardOutput
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(delegate(string line) { return line.Trim(); })
+                    .Where(delegate(string line) { return line.Length > 0; })
+                    .Select(delegate(string user) { return new UserSummary { Name = user }; })
+                    .ToList();
+
+                UsersListBox.ItemsSource = users;
+
+                if (users.Count == 0)
+                {
+                    UserDetailBox.Text = "No users were returned.";
+                }
+
+                SetStatus(users.Count.ToString() + " user(s) loaded.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+            finally
+            {
+                refreshingUsers = false;
+            }
+        }
+
+        private async Task LoadUserDetailsAsync(UserSummary summary)
+        {
             try
             {
                 ProcessRunResult result = await RunOperationAsync(
@@ -133,11 +324,11 @@ namespace MultiOtpManager
                         return cliClient.GetUserAsync(summary.Name, GetTimeout(), token);
                     });
 
-                if (result.ExitCode != 0 && result.ExitCode != 19)
+                if (!IsSuccessCode(result.ExitCode))
                 {
                     ClearUserDetail();
                     UserDetailBox.Text = BuildCombinedOutput(result);
-                    SetStatus("User detail command failed. Exit code: " + result.ExitCode);
+                    SetStatus("User detail command failed. " + GetFriendlyExitText(result.ExitCode));
                     return;
                 }
 
@@ -159,6 +350,302 @@ namespace MultiOtpManager
                 SetStatus(GetSafeExceptionMessage(error));
             }
         }
+
+        private async Task RunSelectedUserActionAsync(
+            string actionName,
+            Func<string, CancellationToken, Task<ProcessRunResult>> action)
+        {
+            UserSummary summary = UsersListBox.SelectedItem as UserSummary;
+            if (summary == null)
+            {
+                SetStatus("Select a user first.");
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    actionName + " user",
+                    delegate(CancellationToken token)
+                    {
+                        return action(summary.Name, token);
+                    });
+
+                UserDetailBox.Text = BuildCombinedOutput(result);
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    SetStatus("User " + summary.Name + ": " + actionName + " succeeded.");
+                    await LoadUserDetailsAsync(summary);
+                }
+                else
+                {
+                    SetStatus(actionName + " failed. " + GetFriendlyExitText(result.ExitCode));
+                }
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        // --- Tokens ---
+
+        private async void RefreshTokensButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "load tokens",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.GetTokensAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(TokensOutputBox, result, "Token list loaded.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void AssignTokenBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string username = TokenUsernameBox.Text.Trim();
+            string tokenId = TokenIdBox.Text.Trim();
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "assign token",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.AssignTokenAsync(username, tokenId, GetTimeout(), token);
+                    });
+
+                ShowOutputResult(TokensOutputBox, result, "Token " + tokenId + " assigned to " + username + ".");
+            }
+            catch (ArgumentException error)
+            {
+                SetStatus(error.Message);
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void RemoveTokenBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string username = TokenUsernameBox.Text.Trim();
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "remove token",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.RemoveTokenAsync(username, GetTimeout(), token);
+                    });
+
+                ShowOutputResult(TokensOutputBox, result, "Token removed from " + username + ".");
+            }
+            catch (ArgumentException error)
+            {
+                SetStatus(error.Message);
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void DeleteTokenBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string tokenId = TokenIdBox.Text.Trim();
+            if (tokenId.Length == 0)
+            {
+                SetStatus("Enter the token ID to delete.");
+                TokenIdBox.Focus();
+                return;
+            }
+
+            if (!ConfirmAction("Delete token " + tokenId + "? This cannot be undone.", "Delete token"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "delete token",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.DeleteTokenAsync(tokenId, GetTimeout(), token);
+                    });
+
+                ShowOutputResult(TokensOutputBox, result, "Token " + tokenId + " deleted.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        // --- Logs ---
+
+        private async void ShowLogBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "read log",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.ShowLogAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(LogOutputBox, result, "Log loaded.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void ClearLogBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ConfirmAction("Clear the multiOTP log?", "Clear log"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "clear log",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.ClearLogAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(LogOutputBox, result, "Log cleared.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void ErrorCodesBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "read error codes",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.GetErrorCodesAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(LogOutputBox, result, "Error codes loaded.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void VersionBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "read version",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.GetVersionAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(LogOutputBox, result, "Version information loaded.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        // --- AD/LDAP ---
+
+        private async void LdapCheckBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "check LDAP connection",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.LdapCheckAsync(GetLdapTimeout(), token);
+                    });
+
+                ShowOutputResult(LdapOutputBox, result, "LDAP connection check finished.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void LdapUsersListBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "list LDAP users",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.LdapUsersListAsync(GetLdapTimeout(), token);
+                    });
+
+                ShowOutputResult(LdapOutputBox, result, "LDAP user list loaded.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void LdapSyncBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ConfirmAction(
+                "Synchronize AD/LDAP users into the multiOTP user store? Existing local users may be updated.",
+                "LDAP synchronization"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "synchronize LDAP users",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.LdapUsersSyncAsync(GetLdapTimeout(), token);
+                    });
+
+                ShowOutputResult(LdapOutputBox, result, "LDAP synchronization finished.");
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    await LoadUsersAsync();
+                }
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        // --- Credential Provider settings ---
 
         private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -183,6 +670,136 @@ namespace MultiOtpManager
                 SetStatus("Settings were not saved.");
             }
         }
+
+        // --- Maintenance ---
+
+        private async void BackupBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string password = BackupPasswordBox.Password;
+            if (password.Length == 0)
+            {
+                SetStatus("Enter a backup password first.");
+                BackupPasswordBox.Focus();
+                return;
+            }
+
+            if (!ConfirmAction("Create an encrypted backup of the multiOTP configuration?", "Backup configuration"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "backup configuration",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.BackupConfigAsync(password, GetTimeout(), token);
+                    });
+
+                ShowOutputResult(MaintenanceOutputBox, result, "Backup created.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+            finally
+            {
+                BackupPasswordBox.Password = string.Empty;
+            }
+        }
+
+        private async void RestoreBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string password = BackupPasswordBox.Password;
+            if (password.Length == 0)
+            {
+                SetStatus("Enter the backup password to restore from.");
+                BackupPasswordBox.Focus();
+                return;
+            }
+
+            if (!ConfirmAction(
+                "Restore the multiOTP configuration from the backup? Current configuration and users may be overwritten.",
+                "Restore configuration"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "restore configuration",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.RestoreConfigAsync(password, GetTimeout(), token);
+                    });
+
+                ShowOutputResult(MaintenanceOutputBox, result, "Configuration restored.");
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    await LoadUsersAsync();
+                }
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+            finally
+            {
+                BackupPasswordBox.Password = string.Empty;
+            }
+        }
+
+        private async void PurgeLockBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ConfirmAction("Purge the lock folder? Locked users and tokens become usable again.", "Purge locks"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "purge lock folder",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.PurgeLockFolderAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(MaintenanceOutputBox, result, "Lock folder purged.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private async void PurgeLdapCacheBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ConfirmAction("Purge the LDAP cache folder?", "Purge LDAP cache"))
+            {
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "purge LDAP cache",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.PurgeLdapCacheAsync(GetTimeout(), token);
+                    });
+
+                ShowOutputResult(MaintenanceOutputBox, result, "LDAP cache purged.");
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        // --- Window / cancellation ---
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
@@ -229,22 +846,35 @@ namespace MultiOtpManager
 
             if (result.ExitCode == 0)
             {
-                VerifyResultText.Foreground = FindResource("GoodColor") as System.Windows.Media.Brush;
+                VerifyResultText.Foreground = FindResource("GoodColor") as Brush;
                 VerifyResultText.Text = "Authentication accepted.";
                 SetStatus("Authentication accepted.");
                 return;
             }
 
-            VerifyResultText.Foreground = FindResource("BadColor") as System.Windows.Media.Brush;
+            VerifyResultText.Foreground = FindResource("BadColor") as Brush;
             VerifyResultText.Text = "Authentication refused. " + GetFriendlyExitText(result.ExitCode);
             SetStatus("Authentication refused. Exit code: " + result.ExitCode);
         }
 
         private void ShowVerifyFailure(string message)
         {
-            VerifyResultText.Foreground = FindResource("BadColor") as System.Windows.Media.Brush;
+            VerifyResultText.Foreground = FindResource("BadColor") as Brush;
             VerifyResultText.Text = message;
             SetStatus(message);
+        }
+
+        private void ShowOutputResult(TextBox target, ProcessRunResult result, string successStatus)
+        {
+            target.Text = BuildCombinedOutput(result);
+            if (IsSuccessCode(result.ExitCode))
+            {
+                SetStatus(successStatus);
+            }
+            else
+            {
+                SetStatus("Command failed. " + GetFriendlyExitText(result.ExitCode));
+            }
         }
 
         private void ClearUserDetail()
@@ -289,6 +919,16 @@ namespace MultiOtpManager
             return scope + provider;
         }
 
+        private bool ConfirmAction(string message, string title)
+        {
+            return MessageBox.Show(
+                message,
+                title,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning,
+                MessageBoxResult.No) == MessageBoxResult.Yes;
+        }
+
         private TimeSpan GetTimeout()
         {
             int seconds;
@@ -309,11 +949,24 @@ namespace MultiOtpManager
             return TimeSpan.FromSeconds(seconds);
         }
 
+        // Directory queries over LDAP can be slow; never use a timeout shorter than 30s.
+        private TimeSpan GetLdapTimeout()
+        {
+            TimeSpan configured = GetTimeout();
+            TimeSpan minimum = TimeSpan.FromSeconds(30);
+            return configured > minimum ? configured : minimum;
+        }
+
         private void SetBusy(bool busy, string status)
         {
-            VerifyButton.IsEnabled = !busy;
-            RefreshUsersButton.IsEnabled = !busy;
-            SaveSettingsButton.IsEnabled = !busy;
+            if (actionButtons != null)
+            {
+                foreach (Button button in actionButtons)
+                {
+                    button.IsEnabled = !busy;
+                }
+            }
+
             UsersListBox.IsEnabled = !busy;
             CancelButton.IsEnabled = busy;
             SetStatus(status);
@@ -322,6 +975,12 @@ namespace MultiOtpManager
         private void SetStatus(string status)
         {
             StatusText.Text = status;
+        }
+
+        private static bool IsSuccessCode(int exitCode)
+        {
+            // multiOTP returns 0 for OK and 11-19 for successful INFO operations.
+            return exitCode == 0 || (exitCode >= 11 && exitCode <= 19);
         }
 
         private static string BuildCombinedOutput(ProcessRunResult result)
@@ -377,6 +1036,26 @@ namespace MultiOtpManager
         {
             switch (exitCode)
             {
+                case 0:
+                    return "OK.";
+                case 11:
+                    return "User successfully created or updated.";
+                case 12:
+                    return "User successfully deleted.";
+                case 13:
+                    return "User PIN code successfully changed.";
+                case 14:
+                    return "Token resynchronized successfully.";
+                case 15:
+                    return "Token definition file imported.";
+                case 16:
+                    return "QR code created.";
+                case 17:
+                    return "Provisioning URL created.";
+                case 18:
+                    return "Static code request received.";
+                case 19:
+                    return "Operation completed.";
                 case 20:
                     return "The user is blacklisted.";
                 case 21:
@@ -386,19 +1065,49 @@ namespace MultiOtpManager
                 case 23:
                     return "The token algorithm is invalid.";
                 case 24:
-                    return "The user or token is locked.";
+                    return "The user or token is locked (too many tries).";
                 case 25:
-                    return "The user is delayed.";
+                    return "The user is delayed (too many tries).";
                 case 26:
-                    return "The token was reused.";
+                    return "The token was already used.";
                 case 27:
-                    return "Token synchronization failed.";
+                    return "Token resynchronization failed.";
+                case 28:
+                    return "Unable to write the changes.";
+                case 29:
+                    return "The token does not exist.";
                 case 30:
                     return "A required parameter is missing.";
+                case 31:
+                    return "The token definition file does not exist.";
+                case 32:
+                    return "The token definition file was not imported.";
+                case 33:
+                    return "Encryption key mismatch.";
+                case 34:
+                    return "The linked user does not exist.";
+                case 35:
+                    return "The user was not created.";
+                case 36:
+                    return "The token does not exist.";
+                case 37:
+                    return "The token is already assigned.";
                 case 38:
                     return "The user is disabled.";
                 case 39:
-                    return "The operation was cancelled.";
+                    return "The operation was aborted.";
+                case 40:
+                    return "SQL query error.";
+                case 41:
+                    return "SQL error.";
+                case 42:
+                    return "The key is not in the table schema.";
+                case 43:
+                    return "The SQL entry cannot be updated.";
+                case 58:
+                    return "A file is missing.";
+                case 59:
+                    return "The restore password is incorrect.";
                 default:
                     return "Exit code " + exitCode + ".";
             }
@@ -421,7 +1130,111 @@ namespace MultiOtpManager
                 return exception.Message;
             }
 
+            if (exception is System.IO.FileNotFoundException)
+            {
+                return "multiotp.exe was not found next to MultiOtpManager.exe.";
+            }
+
             return "The operation failed. " + exception.GetType().Name + ".";
+        }
+
+        // Small modal dialog built in code (no XAML dependency) to collect one or
+        // more labeled values. Used for token resynchronization.
+        private sealed class PromptDialog : Window
+        {
+            private readonly List<TextBox> boxes = new List<TextBox>();
+
+            public PromptDialog(string title, string description, string[] fieldLabels)
+            {
+                Title = title;
+                Width = 380;
+                SizeToContent = SizeToContent.Height;
+                WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                ResizeMode = ResizeMode.NoResize;
+                ShowInTaskbar = false;
+                Background = new SolidColorBrush(Color.FromRgb(0xF3, 0xF5, 0xF7));
+
+                StackPanel root = new StackPanel();
+                root.Margin = new Thickness(16);
+
+                if (!string.IsNullOrEmpty(description))
+                {
+                    TextBlock descriptionText = new TextBlock();
+                    descriptionText.Text = description;
+                    descriptionText.TextWrapping = TextWrapping.Wrap;
+                    descriptionText.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0x30, 0x38));
+                    descriptionText.Margin = new Thickness(0, 0, 0, 12);
+                    root.Children.Add(descriptionText);
+                }
+
+                foreach (string label in fieldLabels)
+                {
+                    TextBlock caption = new TextBlock();
+                    caption.Text = label;
+                    caption.FontSize = 11;
+                    caption.Foreground = new SolidColorBrush(Color.FromRgb(0x61, 0x70, 0x7B));
+                    caption.Margin = new Thickness(0, 0, 0, 3);
+                    root.Children.Add(caption);
+
+                    TextBox box = new TextBox();
+                    box.Height = 28;
+                    box.VerticalContentAlignment = VerticalAlignment.Center;
+                    boxes.Add(box);
+
+                    Border wrapper = new Border();
+                    wrapper.Child = box;
+                    wrapper.Background = new SolidColorBrush(Colors.White);
+                    wrapper.BorderBrush = new SolidColorBrush(Color.FromRgb(0xB8, 0xC0, 0xC8));
+                    wrapper.BorderThickness = new Thickness(1);
+                    wrapper.Margin = new Thickness(0, 0, 0, 10);
+                    root.Children.Add(wrapper);
+                }
+
+                StackPanel buttons = new StackPanel();
+                buttons.Orientation = Orientation.Horizontal;
+                buttons.HorizontalAlignment = HorizontalAlignment.Right;
+                buttons.Margin = new Thickness(0, 6, 0, 0);
+
+                Button okButton = new Button();
+                okButton.Content = "OK";
+                okButton.IsDefault = true;
+                okButton.MinWidth = 88;
+                okButton.Height = 30;
+                okButton.Margin = new Thickness(0, 0, 6, 0);
+                okButton.Click += delegate { DialogResult = true; };
+
+                Button cancelButton = new Button();
+                cancelButton.Content = "Cancel";
+                cancelButton.IsCancel = true;
+                cancelButton.MinWidth = 88;
+                cancelButton.Height = 30;
+
+                buttons.Children.Add(okButton);
+                buttons.Children.Add(cancelButton);
+                root.Children.Add(buttons);
+
+                Content = root;
+                Loaded += delegate
+                {
+                    if (boxes.Count > 0)
+                    {
+                        boxes[0].Focus();
+                    }
+                };
+            }
+
+            public string[] Values
+            {
+                get
+                {
+                    string[] values = new string[boxes.Count];
+                    for (int index = 0; index < boxes.Count; index++)
+                    {
+                        values[index] = boxes[index].Text.Trim();
+                    }
+                    return values;
+                }
+            }
         }
     }
 }
