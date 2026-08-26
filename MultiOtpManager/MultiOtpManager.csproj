@@ -42,6 +42,8 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -59,6 +61,7 @@
     <Compile Include="Core\MultiOtpCliClient.cs" />
     <Compile Include="Core\MultiOtpProcessExecutor.cs" />
     <Compile Include="Core\UserModels.cs" />
+    <Compile Include="Core\SystemUserProbe.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>

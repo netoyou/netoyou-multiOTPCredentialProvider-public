@@ -17,7 +17,7 @@ The manifest requests `requireAdministrator`, because changing credential-provid
 ## Functions
 
 - Authentication test: bundled multiOTP 5.10.2.2 uses the default check syntax `multiotp.exe username otp`. `MultiOtpCliClient.UseVerifySwitch` can be set to `true` for a CLI build that accepts `-verify username otp`.
-- Users: list (`-userslist`), details (`-user-info`), create (`-fastcreatenopin`, no prefix PIN — TOTP token compatible with Google Authenticator), activate, deactivate, lock, unlock, resync (two consecutive OTP codes), delete.
+- Users: list (`-userslist`), details (`-user-info`), create (`-fastcreatenopin`, no prefix PIN — TOTP token compatible with Google Authenticator), activate, deactivate, lock, unlock, resync (two consecutive OTP codes), delete. Before creating, the GUI probes the local SAM (and the joined domain, if any) for the username and warns when no matching Windows account is found.
 - Provisioning: QR code (`-qrcode`) shown in a dialog together with the `otpauth://` URL (`-urllink`, copyable) so users can enroll their authenticator app. The temporary QR image embeds the token secret and is deleted immediately after display loading.
 - Tokens: list (`-tokenslist`), assign (`-assign-token`), remove (`-remove-token`), delete (`-delete-token`).
 - Logs & diagnostics: show log (`-showlog`), clear log (`-clearlog`), error codes (`-error-codes`), version (`-version`).

@@ -16,6 +16,7 @@ namespace MultiOtpManager
     {
         private readonly MultiOtpCliClient cliClient;
         private readonly CredentialProviderRegistryService registryService;
+        private readonly SystemUserProbe systemUserProbe;
         private Button[] actionButtons;
         private CancellationTokenSource currentOperationCancellation;
         private bool refreshingUsers;
@@ -25,6 +26,7 @@ namespace MultiOtpManager
             InitializeComponent();
             cliClient = new MultiOtpCliClient();
             registryService = new CredentialProviderRegistryService();
+            systemUserProbe = new SystemUserProbe();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -93,6 +95,23 @@ namespace MultiOtpManager
                 return;
             }
 
+            // multiOTP Credential Provider only prompts users that already exist
+            // as a Windows account. Warn before creating an entry for an unknown
+            // name so users do not silently lose 2FA coverage.
+            bool systemAccountKnown = await systemUserProbe.ExistsAnywhereAsync(username, GetTimeout(), CancellationToken.None);
+            if (!systemAccountKnown)
+            {
+                if (!ConfirmAction(
+                    "No Windows account named \"" + username + "\" was found on this machine" +
+                    (IsDomainJoined() ? " or in the joined domain" : string.Empty) +
+                    ". The multiOTP Credential Provider only runs after a Windows account has logged in, so this user will never be asked for an OTP until that account exists. Continue creating the multiOTP entry anyway?",
+                    "User not found on this system"))
+                {
+                    SetStatus("User creation canceled: \"" + username + "\" does not match a Windows account.");
+                    return;
+                }
+            }
+
             try
             {
                 // Single-field creation maps to -fastcreatenopin: a TOTP token
@@ -108,7 +127,8 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus("User " + username + " created (TOTP token, no prefix PIN).");
+                    string suffix = systemAccountKnown ? string.Empty : " (warning: no matching Windows account)";
+                    SetStatus("User " + username + " created (TOTP token, no prefix PIN)" + suffix + ".");
                     NewUsernameBox.Text = string.Empty;
                     await LoadUsersAsync();
                 }
@@ -120,6 +140,22 @@ namespace MultiOtpManager
             catch (Exception error)
             {
                 SetStatus(GetSafeExceptionMessage(error));
+            }
+        }
+
+        private static bool IsDomainJoined()
+        {
+            try
+            {
+                using (System.DirectoryServices.DirectoryEntry rootDse = new System.DirectoryServices.DirectoryEntry("LDAP://rootDSE"))
+                {
+                    object defaultContext = rootDse.Properties["defaultNamingContext"].Value;
+                    return defaultContext != null;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
