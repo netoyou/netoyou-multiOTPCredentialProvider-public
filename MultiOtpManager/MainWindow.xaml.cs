@@ -36,7 +36,7 @@ namespace MultiOtpManager
             actionButtons = new[]
             {
                 VerifyButton, RefreshUsersButton, CreateUserButton,
-                ActivateBtn, DeactivateBtn, LockBtn, UnlockBtn, ResyncBtn, QrCodeBtn, DeleteUserBtn,
+                ActivateBtn, DeactivateBtn, LockBtn, UnlockBtn, ResyncBtn, QrCodeBtn, DisablePinBtn, DeleteUserBtn,
                 RefreshTokensButton, AssignTokenBtn, RemoveTokenBtn, DeleteTokenBtn,
                 ShowLogBtn, ClearLogBtn, ErrorCodesBtn, VersionBtn,
                 LdapCheckBtn, LdapUsersListBtn, LdapSyncBtn,
@@ -328,6 +328,41 @@ namespace MultiOtpManager
             finally
             {
                 TryDeleteFile(tempFile);
+            }
+        }
+
+        private async void DisablePinBtn_Click(object sender, RoutedEventArgs e)
+        {
+            UserSummary summary = UsersListBox.SelectedItem as UserSummary;
+            if (summary == null)
+            {
+                SetStatus("Select a user to disable the prefix PIN requirement.");
+                return;
+            }
+
+            try
+            {
+                ProcessRunResult result = await RunOperationAsync(
+                    "disable prefix PIN",
+                    delegate(CancellationToken token)
+                    {
+                        return cliClient.SetUserAttributeAsync(summary.Name, "request_prefix_pin", "0", GetTimeout(), token);
+                    });
+
+                UserDetailBox.Text = BuildCombinedOutput(result);
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    SetStatus("Prefix PIN disabled for " + summary.Name + ". They can now verify with just the OTP.");
+                    await LoadUserDetailsAsync(summary);
+                }
+                else
+                {
+                    SetStatus("Disable PIN failed. " + GetFriendlyExitText(result.ExitCode));
+                }
+            }
+            catch (Exception error)
+            {
+                SetStatus(GetSafeExceptionMessage(error));
             }
         }
 
