@@ -22,6 +22,17 @@ namespace MultiOtpManager
         private bool suppressLanguageChangeHandler;
         private Button[] actionButtons;
         private CancellationTokenSource currentOperationCancellation;
+        // Serialises Users-tab refreshes so that a flurry of tab switches or
+        // overlapping action results cannot queue up concurrent multiotp CLI
+        // invocations (each of which forks a child process) and overwrite each
+        // other's ItemsSource in the UI.
+        private CancellationTokenSource usersRefreshCts;
+        private long usersRefreshRequestId;
+        // Suppresses the UsersListBox.SelectionChanged callback while we are
+        // rebuilding ItemsSource inside LoadUsersAsync, otherwise the two
+        // "SelectedItem = null" + "SelectedItem = match" steps would each
+        // re-trigger LoadUserDetailsAsync and thrash the detail panel.
+        private bool suppressUsersSelectionChanged;
 
         public MainWindow()
         {
@@ -177,6 +188,15 @@ namespace MultiOtpManager
         {
             // Auto-refresh the Users list every time the tab becomes active so the
             // operator sees a fresh view without having to click Refresh first.
+            // Only react when the Users tab was actually added to the selection
+            // (i.e. the user navigated into it). Any other selection change
+            // inside the tab control would otherwise trigger another refresh
+            // and start fighting with the in-flight one.
+            if (e.AddedItems == null || !e.AddedItems.Contains(UsersTab))
+            {
+                return;
+            }
+
             if (!ReferenceEquals(MainTabs.SelectedItem, UsersTab))
             {
                 return;
@@ -262,6 +282,11 @@ namespace MultiOtpManager
 
         private async void UsersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (suppressUsersSelectionChanged)
+            {
+                return;
+            }
+
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
@@ -506,6 +531,20 @@ namespace MultiOtpManager
 
         private async Task LoadUsersAsync()
         {
+            // Cancel any in-flight Users refresh and arm a new token. Stale
+            // tasks bail out at the next await checkpoint instead of writing
+            // back a result that no longer matches the current selection.
+            long requestId = Interlocked.Increment(ref usersRefreshRequestId);
+            CancellationTokenSource previousCts;
+            CancellationTokenSource currentCts = new CancellationTokenSource();
+            previousCts = Interlocked.Exchange(ref usersRefreshCts, currentCts);
+            if (previousCts != null)
+            {
+                try { previousCts.Cancel(); } catch (ObjectDisposedException) { }
+                previousCts.Dispose();
+            }
+            CancellationToken refreshToken = currentCts.Token;
+
             // Remember which user was selected before the refresh so we can
             // restore the selection on the freshly rebuilt item list. Doing
             // this by name (instead of relying on reference equality of the
@@ -518,10 +557,17 @@ namespace MultiOtpManager
             {
                 ProcessRunResult result = await RunOperationAsync(
                     "load users",
-                    delegate(CancellationToken token)
+                    delegate(CancellationToken opToken)
                     {
-                        return cliClient.GetUsersAsync(GetTimeout(), token);
+                        return cliClient.GetUsersAsync(
+                            GetTimeout(),
+                            CancellationTokenSource.CreateLinkedTokenSource(opToken, refreshToken).Token);
                     });
+
+                if (requestId != Volatile.Read(ref usersRefreshRequestId))
+                {
+                    return;
+                }
 
                 if (!IsSuccessCode(result.ExitCode))
                 {
@@ -537,20 +583,35 @@ namespace MultiOtpManager
                     .Select(delegate(string user) { return new UserSummary { Name = user }; })
                     .ToList();
 
-                // Detach the current selection before swapping ItemsSource so
-                // WPF does not briefly show stale detail text for a user that
-                // may no longer exist.
-                UsersListBox.SelectedItem = null;
-                UsersListBox.ItemsSource = users;
-
-                if (!string.IsNullOrEmpty(previouslySelectedName))
+                if (requestId != Volatile.Read(ref usersRefreshRequestId))
                 {
-                    UserSummary match = users.FirstOrDefault(
-                        delegate(UserSummary candidate) { return candidate != null && candidate.Name == previouslySelectedName; });
-                    if (match != null)
+                    return;
+                }
+
+                // Detach the current selection before swapping ItemsSource so
+                // WPF does not briefly raise a SelectionChanged against a
+                // stale item, and suppress the callback so the temporary
+                // null selection does not clear the detail panel just to
+                // have us restore it a few lines later.
+                suppressUsersSelectionChanged = true;
+                try
+                {
+                    UsersListBox.SelectedItem = null;
+                    UsersListBox.ItemsSource = users;
+
+                    if (!string.IsNullOrEmpty(previouslySelectedName))
                     {
-                        UsersListBox.SelectedItem = match;
+                        UserSummary match = users.FirstOrDefault(
+                            delegate(UserSummary candidate) { return candidate != null && candidate.Name == previouslySelectedName; });
+                        if (match != null)
+                        {
+                            UsersListBox.SelectedItem = match;
+                        }
                     }
+                }
+                finally
+                {
+                    suppressUsersSelectionChanged = false;
                 }
 
                 if (users.Count == 0)
@@ -559,10 +620,35 @@ namespace MultiOtpManager
                 }
 
                 SetStatus(string.Format(Resx.Message_UsersLoaded, users.Count));
+
+                // Reload the detail panel for the (restored) selection without
+                // bouncing through SelectionChanged again. If the operator
+                // clicked a different user while we were waiting, that click
+                // already fired its own LoadUserDetailsAsync and we should not
+                // overwrite it with the stale snapshot.
+                if (requestId == Volatile.Read(ref usersRefreshRequestId))
+                {
+                    UserSummary current = UsersListBox.SelectedItem as UserSummary;
+                    if (current != null)
+                    {
+                        await LoadUserDetailsAsync(current);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Superseded by a newer refresh; nothing to do.
             }
             catch (Exception error)
             {
                 SetStatus(GetSafeExceptionMessage(error));
+            }
+            finally
+            {
+                if (Interlocked.CompareExchange(ref usersRefreshCts, null, currentCts) == currentCts)
+                {
+                    currentCts.Dispose();
+                }
             }
         }
 
