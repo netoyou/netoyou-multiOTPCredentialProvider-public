@@ -223,9 +223,9 @@
                                 <Button x:Name="DeactivateBtn" Content="{x:Static p:Resources.Button_Deactivate}" Click="DeactivateBtn_Click" Margin="0,0,6,0" />
                                 <Button x:Name="LockBtn" Content="{x:Static p:Resources.Button_Lock}" Click="LockBtn_Click" Margin="0,0,6,0" />
                                 <Button x:Name="UnlockBtn" Content="{x:Static p:Resources.Button_Unlock}" Click="UnlockBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="ResyncBtn" Content="{x:Static p:Resources.Button_Resync}" Click="ResyncBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="QrCodeBtn" Content="{x:Static p:Resources.Button_QrCode}" Click="QrCodeBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="DisablePinBtn" Content="{x:Static p:Resources.Button_DisablePin}" Click="DisablePinBtn_Click" Margin="0,0,6,0" />
+                                <Button x:Name="ResyncBtn" Content="{x:Static p:Resources.Button_Resync}" Click="ResyncBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.Resync_Tooltip}" />
+                                <Button x:Name="QrCodeBtn" Content="{x:Static p:Resources.Button_QrCode}" Click="QrCodeBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.QrCode_Tooltip}" />
+                                <Button x:Name="DisablePinBtn" Content="{x:Static p:Resources.Button_DisablePin}" Click="DisablePinBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.DisablePin_Tooltip}" />
                                 <Button x:Name="DeleteUserBtn" Content="{x:Static p:Resources.Button_Delete}" Click="DeleteUserBtn_Click" Margin="0,0,6,0" Foreground="#A33131" />
                             </StackPanel>
                         </Grid>
@@ -252,9 +252,9 @@
                             </StackPanel>
                             <StackPanel Margin="0,0,0,10">
                                 <TextBlock Text="{x:Static p:Resources.Label_TimeoutSeconds}" Style="{StaticResource FieldCaption}" />
-                                <TextBox x:Name="TimeoutBox" Text="5" />
+                                <TextBox x:Name="TimeoutBox" Text="5" ToolTip="{x:Static p:Resources.Timeout_Tooltip}" />
                             </StackPanel>
-                            <CheckBox x:Name="UseVerifySwitchBox" Content="{x:Static p:Resources.Check_UseVerifySwitch}" Margin="0,0,0,14" Foreground="{StaticResource TextColor}" />
+                            <CheckBox x:Name="UseVerifySwitchBox" Content="{x:Static p:Resources.Check_UseVerifySwitch}" Margin="0,0,0,14" Foreground="{StaticResource TextColor}" ToolTip="{x:Static p:Resources.Verify_Tooltip}" />
                             <Button x:Name="VerifyButton" Style="{StaticResource PrimaryButton}" Content="{x:Static p:Resources.Button_Verify}" Width="104" Click="VerifyButton_Click" HorizontalAlignment="Left" />
                         </StackPanel>
                     </Border>
@@ -290,8 +290,8 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="{x:Static p:Resources.Section_TokenList}" Style="{StaticResource SectionTitle}" />
-                            <Button Grid.Row="1" x:Name="RefreshTokensButton" Style="{StaticResource PrimaryButton}" Content="{x:Static p:Resources.Button_Refresh}" Click="RefreshTokensButton_Click" HorizontalAlignment="Left" Margin="0,0,0,10" />
-                            <ListBox Grid.Row="2" x:Name="TokensListBox" FontFamily="Consolas" FontSize="12" BorderThickness="1" />
+                            <Button Grid.Row="1" x:Name="RefreshTokensButton" Style="{StaticResource PrimaryButton}" Content="{x:Static p:Resources.Button_Refresh}" Click="RefreshTokensButton_Click" HorizontalAlignment="Left" Margin="0,0,0,10"  ToolTip="{x:Static p:Resources.RefreshTokens_Tooltip}" />
+                            <ListBox Grid.Row="2" x:Name="TokensListBox" FontFamily="Consolas" FontSize="12" BorderThickness="1"  ToolTip="{x:Static p:Resources.TokensList_Tooltip}" />
                             <TextBox Grid.Row="3" x:Name="TokensOutputBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="11" MinHeight="48" MaxHeight="120" Margin="0,8,0,0" />
                         </Grid>
                     </Border>
@@ -307,9 +307,9 @@
                                 <TextBox x:Name="TokenIdBox" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <Button x:Name="AssignTokenBtn" Content="{x:Static p:Resources.Button_Assign}" Click="AssignTokenBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="RemoveTokenBtn" Content="{x:Static p:Resources.Button_Remove}" Click="RemoveTokenBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="DeleteTokenBtn" Content="{x:Static p:Resources.Button_Delete}" Click="DeleteTokenBtn_Click" Margin="0,0,6,0" Foreground="#A33131" />
+                                <Button x:Name="AssignTokenBtn" Content="{x:Static p:Resources.Button_Assign}" Click="AssignTokenBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.AssignToken_Tooltip}" />
+                                <Button x:Name="RemoveTokenBtn" Content="{x:Static p:Resources.Button_Remove}" Click="RemoveTokenBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.RemoveToken_Tooltip}" />
+                                <Button x:Name="DeleteTokenBtn" Content="{x:Static p:Resources.Button_Delete}" Click="DeleteTokenBtn_Click" Margin="0,0,6,0" Foreground="#A33131"  ToolTip="{x:Static p:Resources.DeleteToken_Tooltip}" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -328,9 +328,9 @@
                             <TextBlock Grid.Row="0" Text="{x:Static p:Resources.Section_LogViewer}" Style="{StaticResource SectionTitle}" />
                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
                                 <Button x:Name="ShowLogBtn" Style="{StaticResource PrimaryButton}" Content="{x:Static p:Resources.Button_ShowLog}" Click="ShowLogBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="ClearLogBtn" Content="{x:Static p:Resources.Button_ClearLog}" Click="ClearLogBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="ErrorCodesBtn" Content="{x:Static p:Resources.Button_ErrorCodes}" Click="ErrorCodesBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="VersionBtn" Content="{x:Static p:Resources.Button_Version}" Click="VersionBtn_Click" Margin="0,0,6,0" />
+                                <Button x:Name="ClearLogBtn" Content="{x:Static p:Resources.Button_ClearLog}" Click="ClearLogBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.ClearLog_Tooltip}" />
+                                <Button x:Name="ErrorCodesBtn" Content="{x:Static p:Resources.Button_ErrorCodes}" Click="ErrorCodesBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.ErrorCodes_Tooltip}" />
+                                <Button x:Name="VersionBtn" Content="{x:Static p:Resources.Button_Version}" Click="VersionBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.VersionBtn_Tooltip}" />
                             </StackPanel>
                             <TextBox Grid.Row="2" x:Name="LogOutputBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12" />
                         </Grid>
@@ -349,9 +349,9 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="{x:Static p:Resources.Section_AdLdapIntegration}" Style="{StaticResource SectionTitle}" />
                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-                                <Button x:Name="LdapCheckBtn" Style="{StaticResource PrimaryButton}" Content="{x:Static p:Resources.Button_LdapCheck}" Click="LdapCheckBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="LdapUsersListBtn" Content="{x:Static p:Resources.Button_LdapUsersList}" Click="LdapUsersListBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="LdapSyncBtn" Content="{x:Static p:Resources.Button_LdapSync}" Click="LdapSyncBtn_Click" Margin="0,0,6,0" />
+                                <Button x:Name="LdapCheckBtn" Style="{StaticResource PrimaryButton}" Content="{x:Static p:Resources.Button_LdapCheck}" Click="LdapCheckBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.LdapCheck_Tooltip}" />
+                                <Button x:Name="LdapUsersListBtn" Content="{x:Static p:Resources.Button_LdapUsersList}" Click="LdapUsersListBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.LdapUsersList_Tooltip}" />
+                                <Button x:Name="LdapSyncBtn" Content="{x:Static p:Resources.Button_LdapSync}" Click="LdapSyncBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.LdapSync_Tooltip}" />
                             </StackPanel>
                             <TextBox Grid.Row="2" x:Name="LdapOutputBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12" />
                         </Grid>
@@ -374,28 +374,28 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,14,0">
                                 <TextBlock Text="{x:Static p:Resources.Label_LogonScope}" Style="{StaticResource FieldCaption}" />
-                                <ComboBox x:Name="LogonScopeBox" SelectedValuePath="Tag">
+                                <ComboBox x:Name="LogonScopeBox" SelectedValuePath="Tag" ToolTip="{x:Static p:Resources.LogonScope_Tooltip}">
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_LocalAndRemote}" Tag="0" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_RemoteDesktopOnly}" Tag="1" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_LocalOnly}" Tag="2" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_Disabled}" Tag="3" />
                                 </ComboBox>
                                 <TextBlock Text="{x:Static p:Resources.Label_LogonProviders}" Style="{StaticResource FieldCaption}" Margin="0,10,0,0" />
-                                <ComboBox x:Name="LogonExclusiveBox" SelectedValuePath="Tag">
+                                <ComboBox x:Name="LogonExclusiveBox" SelectedValuePath="Tag" ToolTip="{x:Static p:Resources.LogonProviders_Tooltip}">
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_MultiOtpOnly}" Tag="e" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_OtherProvidersAllowed}" Tag="d" />
                                 </ComboBox>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Margin="0,0,14,0">
                                 <TextBlock Text="{x:Static p:Resources.Label_UnlockScope}" Style="{StaticResource FieldCaption}" />
-                                <ComboBox x:Name="UnlockScopeBox" SelectedValuePath="Tag">
+                                <ComboBox x:Name="UnlockScopeBox" SelectedValuePath="Tag" ToolTip="{x:Static p:Resources.UnlockScope_Tooltip}">
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_LocalAndRemote}" Tag="0" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_RemoteDesktopOnly}" Tag="1" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_LocalOnly}" Tag="2" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_Disabled}" Tag="3" />
                                 </ComboBox>
                                 <TextBlock Text="{x:Static p:Resources.Label_UnlockProviders}" Style="{StaticResource FieldCaption}" Margin="0,10,0,0" />
-                                <ComboBox x:Name="UnlockExclusiveBox" SelectedValuePath="Tag">
+                                <ComboBox x:Name="UnlockExclusiveBox" SelectedValuePath="Tag" ToolTip="{x:Static p:Resources.UnlockProviders_Tooltip}">
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_MultiOtpOnly}" Tag="e" />
                                     <ComboBoxItem Content="{x:Static p:Resources.Option_OtherProvidersAllowed}" Tag="d" />
                                 </ComboBox>
@@ -406,7 +406,7 @@
                     <Border Grid.Row="1" Style="{StaticResource Panel}" Margin="0,12,0,0">
                         <StackPanel>
                             <TextBlock Text="{x:Static p:Resources.Section_AuthenticationFlow}" Style="{StaticResource SectionTitle}" />
-                            <CheckBox x:Name="TwoStepHideOtpBox" Content="{x:Static p:Resources.Check_TwoStepHideOtp}" FontSize="13" Foreground="{StaticResource TextColor}" />
+                            <CheckBox x:Name="TwoStepHideOtpBox" Content="{x:Static p:Resources.Check_TwoStepHideOtp}" FontSize="13" Foreground="{StaticResource TextColor}"  ToolTip="{x:Static p:Resources.TwoStepHideOtp_Tooltip}" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -426,7 +426,7 @@
                                 <PasswordBox x:Name="BackupPasswordBox" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <Button x:Name="BackupBtn" Content="{x:Static p:Resources.Button_BackupConfig}" Click="BackupBtn_Click" Margin="0,0,6,0" />
+                                <Button x:Name="BackupBtn" Content="{x:Static p:Resources.Button_BackupConfig}" Click="BackupBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.BackupRestore_Tooltip}" />
                                 <Button x:Name="RestoreBtn" Content="{x:Static p:Resources.Button_RestoreConfig}" Click="RestoreBtn_Click" Margin="0,0,6,0" />
                             </StackPanel>
                         </StackPanel>
@@ -435,8 +435,8 @@
                         <StackPanel>
                             <TextBlock Text="{x:Static p:Resources.Section_Cleanup}" Style="{StaticResource SectionTitle}" />
                             <StackPanel Orientation="Horizontal">
-                                <Button x:Name="PurgeLockBtn" Content="{x:Static p:Resources.Button_PurgeLock}" Click="PurgeLockBtn_Click" Margin="0,0,6,0" />
-                                <Button x:Name="PurgeLdapCacheBtn" Content="{x:Static p:Resources.Button_PurgeLdapCache}" Click="PurgeLdapCacheBtn_Click" Margin="0,0,6,0" />
+                                <Button x:Name="PurgeLockBtn" Content="{x:Static p:Resources.Button_PurgeLock}" Click="PurgeLockBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.PurgeLock_Tooltip}" />
+                                <Button x:Name="PurgeLdapCacheBtn" Content="{x:Static p:Resources.Button_PurgeLdapCache}" Click="PurgeLdapCacheBtn_Click" Margin="0,0,6,0"  ToolTip="{x:Static p:Resources.PurgeLdapCache_Tooltip}" />
                             </StackPanel>
                             <TextBlock Text="{x:Static p:Resources.Section_Output}" Style="{StaticResource SectionTitle}" Margin="0,16,0,8" />
                             <TextBox x:Name="MaintenanceOutputBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12" Height="200" />

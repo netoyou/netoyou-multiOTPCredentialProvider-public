@@ -219,6 +219,11 @@ namespace MultiOtpManager.Properties
             get { return ResourceManager.GetString("Button_Verify", resourceCulture); }
         }
 
+        public static string Verify_Tooltip
+        {
+            get { return ResourceManager.GetString("Verify_Tooltip", resourceCulture); }
+        }
+
         public static string Button_Version
         {
             get { return ResourceManager.GetString("Button_Version", resourceCulture); }
@@ -1267,6 +1272,121 @@ namespace MultiOtpManager.Properties
         public static string Tab_Users
         {
             get { return ResourceManager.GetString("Tab_Users", resourceCulture); }
+        }
+
+        public static string Timeout_Tooltip
+        {
+            get { return ResourceManager.GetString("Timeout_Tooltip", resourceCulture); }
+        }
+
+        public static string AssignToken_Tooltip
+        {
+            get { return ResourceManager.GetString("AssignToken_Tooltip", resourceCulture); }
+        }
+
+        public static string BackupRestore_Tooltip
+        {
+            get { return ResourceManager.GetString("BackupRestore_Tooltip", resourceCulture); }
+        }
+
+        public static string ClearLog_Tooltip
+        {
+            get { return ResourceManager.GetString("ClearLog_Tooltip", resourceCulture); }
+        }
+
+        public static string DeleteToken_Tooltip
+        {
+            get { return ResourceManager.GetString("DeleteToken_Tooltip", resourceCulture); }
+        }
+
+        public static string DisablePin_Tooltip
+        {
+            get { return ResourceManager.GetString("DisablePin_Tooltip", resourceCulture); }
+        }
+
+        public static string ErrorCodes_Tooltip
+        {
+            get { return ResourceManager.GetString("ErrorCodes_Tooltip", resourceCulture); }
+        }
+
+        public static string LdapCheck_Tooltip
+        {
+            get { return ResourceManager.GetString("LdapCheck_Tooltip", resourceCulture); }
+        }
+
+        public static string LdapSync_Tooltip
+        {
+            get { return ResourceManager.GetString("LdapSync_Tooltip", resourceCulture); }
+        }
+
+        public static string LdapUsersList_Tooltip
+        {
+            get { return ResourceManager.GetString("LdapUsersList_Tooltip", resourceCulture); }
+        }
+
+        public static string LogonProviders_Tooltip
+        {
+            get { return ResourceManager.GetString("LogonProviders_Tooltip", resourceCulture); }
+        }
+
+        public static string LogonScope_Tooltip
+        {
+            get { return ResourceManager.GetString("LogonScope_Tooltip", resourceCulture); }
+        }
+
+        public static string PurgeLdapCache_Tooltip
+        {
+            get { return ResourceManager.GetString("PurgeLdapCache_Tooltip", resourceCulture); }
+        }
+
+        public static string PurgeLock_Tooltip
+        {
+            get { return ResourceManager.GetString("PurgeLock_Tooltip", resourceCulture); }
+        }
+
+        public static string QrCode_Tooltip
+        {
+            get { return ResourceManager.GetString("QrCode_Tooltip", resourceCulture); }
+        }
+
+        public static string RefreshTokens_Tooltip
+        {
+            get { return ResourceManager.GetString("RefreshTokens_Tooltip", resourceCulture); }
+        }
+
+        public static string RemoveToken_Tooltip
+        {
+            get { return ResourceManager.GetString("RemoveToken_Tooltip", resourceCulture); }
+        }
+
+        public static string Resync_Tooltip
+        {
+            get { return ResourceManager.GetString("Resync_Tooltip", resourceCulture); }
+        }
+
+        public static string TokensList_Tooltip
+        {
+            get { return ResourceManager.GetString("TokensList_Tooltip", resourceCulture); }
+        }
+
+        public static string TwoStepHideOtp_Tooltip
+        {
+            get { return ResourceManager.GetString("TwoStepHideOtp_Tooltip", resourceCulture); }
+        }
+
+        public static string UnlockProviders_Tooltip
+        {
+            get { return ResourceManager.GetString("UnlockProviders_Tooltip", resourceCulture); }
+        }
+
+        public static string UnlockScope_Tooltip
+        {
+            get { return ResourceManager.GetString("UnlockScope_Tooltip", resourceCulture); }
+        }
+
+        public static string VersionBtn_Tooltip
+        {
+            get { return ResourceManager.GetString("VersionBtn_Tooltip", resourceCulture); }
         }
 
     }

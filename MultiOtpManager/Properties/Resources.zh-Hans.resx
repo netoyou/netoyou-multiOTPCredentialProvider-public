@@ -133,6 +133,30 @@
 
   <!-- Checkboxes -->
   <data name="Check_UseVerifySwitch" xml:space="preserve"><value>使用 -verify 命令</value></data>
+  <data name="Timeout_Tooltip" xml:space="preserve"><value>等待 multiotp.exe 子进程的最大秒数。管理端的所有操作都会沿用这个超时（AD/LDAP 查询除外，它们最少等待 30 秒）。当后台使用 SQL、LDAP 或 PrivacyIDEA 等较慢的后端时，可调大此值以避免误报"超时"。</value></data>
+  <data name="Verify_Tooltip" xml:space="preserve"><value>使用 multiotp -verify 试探性校验而不是真正的认证。OTP 会被检查是否落在时间窗口内，但不会被消耗，因此可以反复用同一个口令调试而不会让用户下次登录失败。用于排查用户上报的"口令不对"问题。</value></data>
+  <data name="DisablePin_Tooltip" xml:space="preserve"><value>关闭该用户在登录时输入 PIN 的要求，只校验动态口令（更方便但安全性降低）。仅影响登录，不影响解锁。</value></data>
+  <data name="Resync_Tooltip" xml:space="preserve"><value>在校准器时间漂移后重新对齐令牌。需要连续输入两个动态口令，第二个口令必须是紧接的下一组。</value></data>
+  <data name="QrCode_Tooltip" xml:space="preserve"><value>为选中用户显示 otpauth:// 配置二维码。临时图片在加载到对话框后立刻从磁盘删除，如需保留请立即截图。</value></data>
+  <data name="RefreshTokens_Tooltip" xml:space="preserve"><value>重新读取 multiOTP 硬件/软件令牌清单 (-tokenslist)。下方显示的是真正的令牌存储，与用户列表无关。</value></data>
+  <data name="TokensList_Tooltip" xml:space="preserve"><value>multiOTP 中注册的全部硬件/软件令牌清单。使用右侧的 Assign / Remove 把令牌绑定到用户或解绑。Delete 会从存储中彻底删除该令牌。</value></data>
+  <data name="AssignToken_Tooltip" xml:space="preserve"><value>把输入的 TOKEN ID 绑定到输入的 USERNAME。该令牌必须已经存在于上方令牌列表中。</value></data>
+  <data name="RemoveToken_Tooltip" xml:space="preserve"><value>把输入的 TOKEN ID 从输入的 USERNAME 上解绑。令牌本身仍保留在存储中，可以分配给其他用户。</value></data>
+  <data name="DeleteToken_Tooltip" xml:space="preserve"><value>从 multiOTP 令牌存储中永久删除输入的 TOKEN ID。已绑定的用户会立刻失去访问能力。</value></data>
+  <data name="LogonScope_Tooltip" xml:space="preserve"><value>multiOTP 凭据提供程序在哪些登录场景要求二次认证。「本地与远程」覆盖控制台和远程桌面；「仅远程桌面」让控制台使用 Windows 密码；「仅本地」在远程桌面上不要求；「已禁用」则完全关闭 multiOTP 登录提示（用户用 Windows 密码登录）。</value></data>
+  <data name="UnlockScope_Tooltip" xml:space="preserve"><value>与 LOGON SCOPE 相同，但只作用于已登录会话的解锁（按 Ctrl+Alt+Del -> 锁定 后的对话框）。与登录设置相互独立。</value></data>
+  <data name="LogonProviders_Tooltip" xml:space="preserve"><value>「仅 multiOTP」表示 multiOTP 抢占凭据磁贴，用户必须先通过二次认证 Windows 才会接受密码。「允许其他提供程序」则保留内置密码提供程序，未注册令牌的用户也能登录。</value></data>
+  <data name="UnlockProviders_Tooltip" xml:space="preserve"><value>与 LOGON PROVIDERS 相同的排他选项，作用于工作站解锁提示。</value></data>
+  <data name="TwoStepHideOtp_Tooltip" xml:space="preserve"><value>勾选后，用户在 Windows 密码同一输入框中输入动态口令（单步）；不勾选时，Windows 先要求输入密码，再单独提示输入动态口令（两步）。单步更友好，但部分屏幕键盘或 kiosk 场景需要两步布局。</value></data>
+  <data name="BackupRestore_Tooltip" xml:space="preserve"><value>对整个 multiOTP 配置进行加密备份/恢复：包括所有用户记录、每个令牌种子、AD/LDAP 设置、服务端选项和缓存。密码只在内存中保存，备份与恢复时均需输入。</value></data>
+  <data name="PurgeLock_Tooltip" xml:space="preserve"><value>删除 multiOTP.lock 文件夹，该文件夹用于跨服务认证时的串行化。仅当确认没有其他 multiOTP 进程正在认证、且怀疑崩溃遗留的锁文件导致所有登录失败时执行。</value></data>
+  <data name="PurgeLdapCache_Tooltip" xml:space="preserve"><value>清空本地 LDAP 用户信息缓存。下一次 AD/LDAP 同步会从目录服务器全量重建。修改 LDAP 过滤或属性映射后使用。</value></data>
+  <data name="LdapCheck_Tooltip" xml:space="preserve"><value>执行 multiotp -ldap-check，校验到已配置 AD/LDAP 服务器的连通性、凭据和搜索基。只读操作。</value></data>
+  <data name="LdapUsersList_Tooltip" xml:space="preserve"><value>执行 multiotp -ldap-users-list，列出符合已配置过滤条件的 AD/LDAP 用户。只读，不会写入 multiOTP 或 AD。</value></data>
+  <data name="LdapSync_Tooltip" xml:space="preserve"><value>执行 multiotp -ldap-users-sync。这是一个写操作：把 multiOTP 端的用户属性（邮件、显示名、描述、组）回写到 AD 的对应账户，并把缺失的用户拉入。如有异常请先执行 LDAP CHECK。</value></data>
+  <data name="ClearLog_Tooltip" xml:space="preserve"><value>永久删除 multiOTP 调试日志。该日志可能被技术支持或审计流程需要，确认后再清空。</value></data>
+  <data name="ErrorCodes_Tooltip" xml:space="preserve"><value>列出 multiOTP 全部退出码对照表 (-error-codes)。当状态栏出现不认识的数字错误码时使用。</value></data>
+  <data name="VersionBtn_Tooltip" xml:space="preserve"><value>显示当前 multiotp.exe（以及管理器）的版本号。</value></data>
   <data name="Check_TwoStepHideOtp" xml:space="preserve"><value>在第二步中要求输入动态口令</value></data>
 
   <!-- Status / messages -->
