@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="3" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <!-- App chrome -->
+  <data name="App_Title" xml:space="preserve"><value>multiOTP Manager</value></data>
+  <data name="App_HeaderTitle" xml:space="preserve"><value>multiOTP Manager</value></data>
+  <data name="App_ExecutableTooltip" xml:space="preserve"><value>multiotp.exe location</value></data>
+
+  <!-- Tabs -->
+  <data name="Tab_Authentication" xml:space="preserve"><value>Authentication</value></data>
+  <data name="Tab_Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Tab_Tokens" xml:space="preserve"><value>Tokens</value></data>
+  <data name="Tab_Logs" xml:space="preserve"><value>Logs</value></data>
+  <data name="Tab_AdLdap" xml:space="preserve"><value>AD/LDAP</value></data>
+  <data name="Tab_CredentialProvider" xml:space="preserve"><value>Credential Provider</value></data>
+  <data name="Tab_Maintenance" xml:space="preserve"><value>Maintenance</value></data>
+
+  <!-- Shared labels -->
+  <data name="Label_Username" xml:space="preserve"><value>USERNAME</value></data>
+  <data name="Label_Otp" xml:space="preserve"><value>OTP</value></data>
+  <data name="Label_TimeoutSeconds" xml:space="preserve"><value>TIMEOUT (SECONDS)</value></data>
+  <data name="Label_TokenType" xml:space="preserve"><value>TOKEN TYPE</value></data>
+  <data name="Label_Status" xml:space="preserve"><value>STATUS</value></data>
+  <data name="Label_Created" xml:space="preserve"><value>CREATED</value></data>
+  <data name="Label_OtpDigits" xml:space="preserve"><value>OTP DIGITS</value></data>
+  <data name="Label_Description" xml:space="preserve"><value>DESCRIPTION</value></data>
+  <data name="Label_TokenId" xml:space="preserve"><value>TOKEN ID</value></data>
+  <data name="Label_Password" xml:space="preserve"><value>PASSWORD</value></data>
+  <data name="Label_LogonScope" xml:space="preserve"><value>LOGON SCOPE</value></data>
+  <data name="Label_LogonProviders" xml:space="preserve"><value>LOGON PROVIDERS</value></data>
+  <data name="Label_UnlockScope" xml:space="preserve"><value>UNLOCK SCOPE</value></data>
+  <data name="Label_UnlockProviders" xml:space="preserve"><value>UNLOCK PROVIDERS</value></data>
+  <data name="Label_NewUser" xml:space="preserve"><value>NEW USER</value></data>
+  <data name="Label_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Language_SystemDefault" xml:space="preserve"><value>System default</value></data>
+  <data name="Language_English" xml:space="preserve"><value>English</value></data>
+  <data name="Language_ChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Message_LanguageRestartRequired" xml:space="preserve"><value>The new language will take effect after the application is restarted. Restart now?</value></data>
+  <data name="Message_LanguageChangedToSystemDefault" xml:space="preserve"><value>Language reset to system default. Restart for the change to take effect?</value></data>
+  <data name="Dialog_LanguageChangeTitle" xml:space="preserve"><value>Language change</value></data>
+
+  <!-- Sections -->
+  <data name="Section_AuthenticationTest" xml:space="preserve"><value>Authentication test</value></data>
+  <data name="Section_Result" xml:space="preserve"><value>Result</value></data>
+  <data name="Section_Users" xml:space="preserve"><value>Users</value></data>
+  <data name="Section_UserDetails" xml:space="preserve"><value>User details</value></data>
+  <data name="Section_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Section_TokenList" xml:space="preserve"><value>Token list</value></data>
+  <data name="Section_TokenOperations" xml:space="preserve"><value>Token operations</value></data>
+  <data name="Section_LogViewer" xml:space="preserve"><value>Log viewer</value></data>
+  <data name="Section_AdLdapIntegration" xml:space="preserve"><value>AD/LDAP integration</value></data>
+  <data name="Section_AuthenticationFlow" xml:space="preserve"><value>Authentication flow</value></data>
+  <data name="Section_BackupRestore" xml:space="preserve"><value>Backup &amp; Restore</value></data>
+  <data name="Section_Cleanup" xml:space="preserve"><value>Cleanup</value></data>
+  <data name="Section_Output" xml:space="preserve"><value>Output</value></data>
+
+  <!-- Buttons -->
+  <data name="Button_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Button_Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Button_Create" xml:space="preserve"><value>Create</value></data>
+  <data name="Button_Verify" xml:space="preserve"><value>Verify</value></data>
+  <data name="Button_Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Button_Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Button_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Button_Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Button_Resync" xml:space="preserve"><value>Resync</value></data>
+  <data name="Button_QrCode" xml:space="preserve"><value>QR Code</value></data>
+  <data name="Button_DisablePin" xml:space="preserve"><value>Disable PIN</value></data>
+  <data name="Button_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Button_Assign" xml:space="preserve"><value>Assign</value></data>
+  <data name="Button_Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Button_ShowLog" xml:space="preserve"><value>Show Log</value></data>
+  <data name="Button_ClearLog" xml:space="preserve"><value>Clear Log</value></data>
+  <data name="Button_ErrorCodes" xml:space="preserve"><value>Error Codes</value></data>
+  <data name="Button_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Button_LdapCheck" xml:space="preserve"><value>Check Connection</value></data>
+  <data name="Button_LdapUsersList" xml:space="preserve"><value>List LDAP Users</value></data>
+  <data name="Button_LdapSync" xml:space="preserve"><value>Sync Users</value></data>
+  <data name="Button_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Button_BackupConfig" xml:space="preserve"><value>Backup Config</value></data>
+  <data name="Button_RestoreConfig" xml:space="preserve"><value>Restore Config</value></data>
+  <data name="Button_PurgeLock" xml:space="preserve"><value>Purge Lock Files</value></data>
+  <data name="Button_PurgeLdapCache" xml:space="preserve"><value>Purge LDAP Cache</value></data>
+  <data name="Button_CopyUrl" xml:space="preserve"><value>Copy URL</value></data>
+  <data name="Button_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Status_Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="Status_CopyFailed" xml:space="preserve"><value>Copy failed</value></data>
+
+  <!-- Combo options -->
+  <data name="Option_LocalAndRemote" xml:space="preserve"><value>Local and remote</value></data>
+  <data name="Option_RemoteDesktopOnly" xml:space="preserve"><value>Remote desktop only</value></data>
+  <data name="Option_LocalOnly" xml:space="preserve"><value>Local only</value></data>
+  <data name="Option_Disabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="Option_MultiOtpOnly" xml:space="preserve"><value>multiOTP only</value></data>
+  <data name="Option_OtherProvidersAllowed" xml:space="preserve"><value>Other providers allowed</value></data>
+
+  <!-- Checkboxes -->
+  <data name="Check_UseVerifySwitch" xml:space="preserve"><value>Use -verify command</value></data>
+  <data name="Check_TwoStepHideOtp" xml:space="preserve"><value>Ask for OTP in a second step</value></data>
+
+  <!-- Status / messages -->
+  <data name="Status_Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="Status_OperationInProgress" xml:space="preserve"><value>{0}...</value></data>
+  <data name="Status_NoTestRun" xml:space="preserve"><value>No test run</value></data>
+  <data name="Status_CancelingOperation" xml:space="preserve"><value>Canceling current operation...</value></data>
+
+  <data name="Message_EnterUsername" xml:space="preserve"><value>Enter a name for the new user.</value></data>
+  <data name="Message_EnterTokenIdToDelete" xml:space="preserve"><value>Enter the token ID to delete.</value></data>
+  <data name="Message_EnterBackupPassword" xml:space="preserve"><value>Enter a backup password first.</value></data>
+  <data name="Message_EnterRestorePassword" xml:space="preserve"><value>Enter the backup password to restore from.</value></data>
+  <data name="Message_UserCreated" xml:space="preserve"><value>User {0} created (TOTP token, no prefix PIN){1}.</value></data>
+  <data name="Message_UserCreationCanceled" xml:space="preserve"><value>User creation canceled: "{0}" does not match a Windows account.</value></data>
+  <data name="Message_UserCreationFailed" xml:space="preserve"><value>User creation failed. {0}</value></data>
+  <data name="Message_TwoOtpCodesRequired" xml:space="preserve"><value>Two OTP codes are required for resynchronization.</value></data>
+  <data name="Message_TokenResynchronized" xml:space="preserve"><value>Token resynchronized for {0}.</value></data>
+  <data name="Message_ResyncFailed" xml:space="preserve"><value>Resynchronization failed. {0}</value></data>
+  <data name="Message_TokenNoQrCode" xml:space="preserve"><value>This token cannot be provisioned with a QR code. {0}</value></data>
+  <data name="Message_QrCodeShown" xml:space="preserve"><value>Provisioning information shown for {0}.</value></data>
+  <data name="Message_PrefixPinDisabled" xml:space="preserve"><value>Prefix PIN disabled for {0}. They can now verify with just the OTP.</value></data>
+  <data name="Message_DisablePinFailed" xml:space="preserve"><value>Disable PIN failed. {0}</value></data>
+  <data name="Message_SelectUserToResync" xml:space="preserve"><value>Select a user to resync.</value></data>
+  <data name="Message_SelectUserForQrCode" xml:space="preserve"><value>Select a user to show the provisioning QR code.</value></data>
+  <data name="Message_SelectUserToDisablePin" xml:space="preserve"><value>Select a user to disable the prefix PIN requirement.</value></data>
+  <data name="Message_SelectUserToDelete" xml:space="preserve"><value>Select a user to delete.</value></data>
+  <data name="Message_SelectUserFirst" xml:space="preserve"><value>Select a user first.</value></data>
+  <data name="Message_UserDeleted" xml:space="preserve"><value>User {0} deleted.</value></data>
+  <data name="Message_DeleteFailed" xml:space="preserve"><value>Delete failed. {0}</value></data>
+  <data name="Message_CommandFailed" xml:space="preserve"><value>Command failed. {0}</value></data>
+  <data name="Message_UserListFailed" xml:space="preserve"><value>User list command failed. {0}</value></data>
+  <data name="Message_NoUsersReturned" xml:space="preserve"><value>No users were returned.</value></data>
+  <data name="Message_UsersLoaded" xml:space="preserve"><value>{0} user(s) loaded.</value></data>
+  <data name="Message_UserDetailFailed" xml:space="preserve"><value>User detail command failed. {0}</value></data>
+  <data name="Message_DetailsLoaded" xml:space="preserve"><value>Details loaded for {0}.</value></data>
+  <data name="Message_UserActionSucceeded" xml:space="preserve"><value>User {0}: {1} succeeded.</value></data>
+  <data name="Message_UserActionFailed" xml:space="preserve"><value>{0} failed. {1}</value></data>
+  <data name="Message_TokenListLoaded" xml:space="preserve"><value>Token list loaded.</value></data>
+  <data name="Message_NoTokensReturned" xml:space="preserve"><value>No tokens were returned.</value></data>
+  <data name="Message_TokensLoaded" xml:space="preserve"><value>{0} token(s) loaded.</value></data>
+  <data name="Message_TokenAssigned" xml:space="preserve"><value>Token {0} assigned to {1}.</value></data>
+  <data name="Message_TokenRemoved" xml:space="preserve"><value>Token removed from {0}.</value></data>
+  <data name="Message_TokenDeleted" xml:space="preserve"><value>Token {0} deleted.</value></data>
+  <data name="Message_LogLoaded" xml:space="preserve"><value>Log loaded.</value></data>
+  <data name="Message_LogCleared" xml:space="preserve"><value>Log cleared.</value></data>
+  <data name="Message_ErrorCodesLoaded" xml:space="preserve"><value>Error codes loaded.</value></data>
+  <data name="Message_VersionLoaded" xml:space="preserve"><value>Version information loaded.</value></data>
+  <data name="Message_SettingsSaved" xml:space="preserve"><value>Credential Provider settings saved.</value></data>
+  <data name="Message_SettingsNotSaved" xml:space="preserve"><value>Settings were not saved.</value></data>
+  <data name="Message_BackupCreated" xml:space="preserve"><value>Backup created.</value></data>
+  <data name="Message_ConfigurationRestored" xml:space="preserve"><value>Configuration restored.</value></data>
+  <data name="Message_LockFolderPurged" xml:space="preserve"><value>Lock folder purged.</value></data>
+  <data name="Message_LdapSyncFinished" xml:space="preserve"><value>LDAP synchronization finished.</value></data>
+  <data name="Message_LdapCheckFinished" xml:space="preserve"><value>LDAP connection check finished.</value></data>
+  <data name="Message_LdapUserListLoaded" xml:space="preserve"><value>LDAP user list loaded.</value></data>
+  <data name="Message_LdapCachePurged" xml:space="preserve"><value>LDAP cache purged.</value></data>
+  <data name="Message_AuthenticationAccepted" xml:space="preserve"><value>Authentication accepted.</value></data>
+  <data name="Message_AuthenticationRefused" xml:space="preserve"><value>Authentication refused. {0}</value></data>
+  <data name="Message_AuthenticationRefusedExitCode" xml:space="preserve"><value>Authentication refused. Exit code: {0}</value></data>
+  <data name="Message_OperationTimedOut" xml:space="preserve"><value>The operation timed out.</value></data>
+  <data name="Message_OperationCanceled" xml:space="preserve"><value>The operation was canceled.</value></data>
+  <data name="Message_OperationFailedWithType" xml:space="preserve"><value>The operation failed. {0}.</value></data>
+  <data name="Message_MultiotpNotFound" xml:space="preserve"><value>multiotp.exe was not found next to MultiOtpManager.exe.</value></data>
+
+  <!-- Confirmation dialog text -->
+  <data name="Dialog_DeleteUserTitle" xml:space="preserve"><value>Delete user</value></data>
+  <data name="Dialog_DeleteUserMessage" xml:space="preserve"><value>Delete user {0}? This permanently removes the user and the associated token data.</value></data>
+  <data name="Dialog_DeleteTokenTitle" xml:space="preserve"><value>Delete token</value></data>
+  <data name="Dialog_DeleteTokenMessage" xml:space="preserve"><value>Delete token {0}? This cannot be undone.</value></data>
+  <data name="Dialog_ClearLogTitle" xml:space="preserve"><value>Clear log</value></data>
+  <data name="Dialog_ClearLogMessage" xml:space="preserve"><value>Clear the multiOTP log?</value></data>
+  <data name="Dialog_LdapSyncTitle" xml:space="preserve"><value>LDAP synchronization</value></data>
+  <data name="Dialog_LdapSyncMessage" xml:space="preserve"><value>Synchronize AD/LDAP users into the multiOTP user store? Existing local users may be updated.</value></data>
+  <data name="Dialog_BackupTitle" xml:space="preserve"><value>Backup configuration</value></data>
+  <data name="Dialog_BackupMessage" xml:space="preserve"><value>Create an encrypted backup of the multiOTP configuration?</value></data>
+  <data name="Dialog_RestoreTitle" xml:space="preserve"><value>Restore configuration</value></data>
+  <data name="Dialog_RestoreMessage" xml:space="preserve"><value>Restore the multiOTP configuration from the backup? Current configuration and users may be overwritten.</value></data>
+  <data name="Dialog_PurgeLocksTitle" xml:space="preserve"><value>Purge locks</value></data>
+  <data name="Dialog_PurgeLocksMessage" xml:space="preserve"><value>Purge the lock folder? Locked users and tokens become usable again.</value></data>
+  <data name="Dialog_PurgeLdapCacheTitle" xml:space="preserve"><value>Purge LDAP cache</value></data>
+  <data name="Dialog_PurgeLdapCacheMessage" xml:space="preserve"><value>Purge the LDAP cache folder?</value></data>
+  <data name="Dialog_ResyncTokenTitle" xml:space="preserve"><value>Resync token</value></data>
+  <data name="Dialog_ResyncTokenMessage" xml:space="preserve"><value>Enter two consecutive OTP codes generated by the token of {0}. Both codes must be unused.</value></data>
+  <data name="Prompt_FirstOtpCode" xml:space="preserve"><value>FIRST OTP CODE</value></data>
+  <data name="Prompt_SecondOtpCode" xml:space="preserve"><value>SECOND OTP CODE</value></data>
+  <data name="Prompt_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Dialog_UserNotFoundTitle" xml:space="preserve"><value>User not found on this system</value></data>
+  <data name="Dialog_UserNotFoundMessage" xml:space="preserve"><value>No Windows account named "{0}" was found on this machine{1}. The multiOTP Credential Provider only runs after a Windows account has logged in, so this user will never be asked for an OTP until that account exists. Continue creating the multiOTP entry anyway?</value></data>
+  <data name="Dialog_SettingsNotSavedTitle" xml:space="preserve"><value>Settings not saved</value></data>
+  <data name="Dialog_QrCodeTitle" xml:space="preserve"><value>Provisioning - {0}</value></data>
+  <data name="Dialog_QrCodeHint" xml:space="preserve"><value>Scan the code with Google Authenticator, FreeOTP or any compatible authenticator app. The code contains the token secret: do not share it.</value></data>
+  <data name="Dialog_QrCodeErrorFallback" xml:space="preserve"><value>The QR image could not be generated ({0}). Use the provisioning URL below instead.</value></data>
+  <data name="Label_ProvisioningUrl" xml:space="preserve"><value>PROVISIONING URL</value></data>
+
+  <!-- Output panel formatting -->
+  <data name="Output_ExitCodeWithMessage" xml:space="preserve"><value>Exit code: {0} ({1})</value></data>
+  <data name="Output_StandardOutputHeader" xml:space="preserve"><value>Standard output:</value></data>
+  <data name="Output_StandardErrorHeader" xml:space="preserve"><value>Standard error:</value></data>
+
+  <!-- Friendly multiOTP exit code descriptions -->
+  <data name="Code_0" xml:space="preserve"><value>OK.</value></data>
+  <data name="Code_11" xml:space="preserve"><value>User successfully created or updated.</value></data>
+  <data name="Code_12" xml:space="preserve"><value>User successfully deleted.</value></data>
+  <data name="Code_13" xml:space="preserve"><value>User PIN code successfully changed.</value></data>
+  <data name="Code_14" xml:space="preserve"><value>Token resynchronized successfully.</value></data>
+  <data name="Code_15" xml:space="preserve"><value>Token definition file imported.</value></data>
+  <data name="Code_16" xml:space="preserve"><value>QR code created.</value></data>
+  <data name="Code_17" xml:space="preserve"><value>Provisioning URL created.</value></data>
+  <data name="Code_18" xml:space="preserve"><value>Static code request received.</value></data>
+  <data name="Code_19" xml:space="preserve"><value>Operation completed.</value></data>
+  <data name="Code_20" xml:space="preserve"><value>The user is blacklisted.</value></data>
+  <data name="Code_21" xml:space="preserve"><value>The user does not exist.</value></data>
+  <data name="Code_22" xml:space="preserve"><value>The user already exists.</value></data>
+  <data name="Code_23" xml:space="preserve"><value>The token algorithm is invalid.</value></data>
+  <data name="Code_24" xml:space="preserve"><value>The user or token is locked (too many tries).</value></data>
+  <data name="Code_25" xml:space="preserve"><value>The user is delayed (too many tries).</value></data>
+  <data name="Code_26" xml:space="preserve"><value>The token was already used.</value></data>
+  <data name="Code_27" xml:space="preserve"><value>Token resynchronization failed.</value></data>
+  <data name="Code_28" xml:space="preserve"><value>Unable to write the changes.</value></data>
+  <data name="Code_29" xml:space="preserve"><value>The token does not exist.</value></data>
+  <data name="Code_30" xml:space="preserve"><value>A required parameter is missing.</value></data>
+  <data name="Code_31" xml:space="preserve"><value>The token definition file does not exist.</value></data>
+  <data name="Code_32" xml:space="preserve"><value>The token definition file was not imported.</value></data>
+  <data name="Code_33" xml:space="preserve"><value>Encryption key mismatch.</value></data>
+  <data name="Code_34" xml:space="preserve"><value>The linked user does not exist.</value></data>
+  <data name="Code_35" xml:space="preserve"><value>The user was not created.</value></data>
+  <data name="Code_36" xml:space="preserve"><value>The token does not exist.</value></data>
+  <data name="Code_37" xml:space="preserve"><value>The token is already assigned.</value></data>
+  <data name="Code_38" xml:space="preserve"><value>The user is disabled.</value></data>
+  <data name="Code_39" xml:space="preserve"><value>The operation was aborted.</value></data>
+  <data name="Code_40" xml:space="preserve"><value>SQL query error.</value></data>
+  <data name="Code_41" xml:space="preserve"><value>SQL error.</value></data>
+  <data name="Code_42" xml:space="preserve"><value>The key is not in the table schema.</value></data>
+  <data name="Code_43" xml:space="preserve"><value>The SQL entry cannot be updated.</value></data>
+  <data name="Code_58" xml:space="preserve"><value>A file is missing.</value></data>
+  <data name="Code_59" xml:space="preserve"><value>The restore password is incorrect.</value></data>
+  <data name="Code_60" xml:space="preserve"><value>No information on where to send the SMS code.</value></data>
+  <data name="Code_61" xml:space="preserve"><value>An error occurred while sending the SMS code.</value></data>
+  <data name="Code_62" xml:space="preserve"><value>The SMS provider is not supported.</value></data>
+  <data name="Code_63" xml:space="preserve"><value>The SMS code has expired.</value></data>
+  <data name="Code_64" xml:space="preserve"><value>The SMS code cannot be resent right now.</value></data>
+  <data name="Code_65" xml:space="preserve"><value>The SMS code request is not allowed.</value></data>
+  <data name="Code_66" xml:space="preserve"><value>The email code request is not allowed.</value></data>
+  <data name="Code_67" xml:space="preserve"><value>No information on where to send the email code.</value></data>
+  <data name="Code_68" xml:space="preserve"><value>An error occurred while sending the email code.</value></data>
+  <data name="Code_69" xml:space="preserve"><value>Failed to send the email.</value></data>
+  <data name="Code_70" xml:space="preserve"><value>Server authentication error.</value></data>
+  <data name="Code_71" xml:space="preserve"><value>Server request is not correctly formatted.</value></data>
+  <data name="Code_72" xml:space="preserve"><value>Server answer is not correctly formatted.</value></data>
+  <data name="Code_73" xml:space="preserve"><value>Email SMTP server is not defined.</value></data>
+  <data name="Code_79" xml:space="preserve"><value>AD/LDAP connection error.</value></data>
+  <data name="Code_80" xml:space="preserve"><value>Server cache error.</value></data>
+  <data name="Code_81" xml:space="preserve"><value>Cache too old for this user, account autolocked.</value></data>
+  <data name="Code_82" xml:space="preserve"><value>User is not allowed for this device.</value></data>
+  <data name="Code_88" xml:space="preserve"><value>Device is not defined as a HA slave.</value></data>
+  <data name="Code_89" xml:space="preserve"><value>Device is not defined as a HA master.</value></data>
+  <data name="Code_90" xml:space="preserve"><value>AD/LDAP authentication failed.</value></data>
+  <data name="Code_91" xml:space="preserve"><value>Authentication failed (without2FA token not authorized here).</value></data>
+  <data name="Code_92" xml:space="preserve"><value>Authentication failed (bad password).</value></data>
+  <data name="Code_93" xml:space="preserve"><value>Authentication failed (time based token probably out of sync).</value></data>
+  <data name="Code_94" xml:space="preserve"><value>API request error.</value></data>
+  <data name="Code_95" xml:space="preserve"><value>API authentication failed.</value></data>
+  <data name="Code_96" xml:space="preserve"><value>Push authentication timeout.</value></data>
+  <data name="Code_97" xml:space="preserve"><value>Push authentication denied.</value></data>
+  <data name="Code_98" xml:space="preserve"><value>Authentication failed (wrong token length).</value></data>
+  <data name="Code_99" xml:space="preserve"><value>Authentication failed (unknown error).</value></data>
+  <data name="Code_Unknown" xml:space="preserve"><value>Exit code {0}.</value></data>
+</root>

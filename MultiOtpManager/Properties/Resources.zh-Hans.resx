@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Simplified Chinese (zh-Hans) translations.
+    To regenerate after Resources.resx changes, copy that file, then translate
+    every <value> element. Untranslated keys fall back to the default file.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="3" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <!-- App chrome -->
+  <data name="App_Title" xml:space="preserve"><value>multiOTP 管理器</value></data>
+  <data name="App_HeaderTitle" xml:space="preserve"><value>multiOTP 管理器</value></data>
+  <data name="App_ExecutableTooltip" xml:space="preserve"><value>multiotp.exe 所在位置</value></data>
+
+  <!-- Tabs -->
+  <data name="Tab_Authentication" xml:space="preserve"><value>身份验证</value></data>
+  <data name="Tab_Users" xml:space="preserve"><value>用户</value></data>
+  <data name="Tab_Tokens" xml:space="preserve"><value>令牌</value></data>
+  <data name="Tab_Logs" xml:space="preserve"><value>日志</value></data>
+  <data name="Tab_AdLdap" xml:space="preserve"><value>AD/LDAP</value></data>
+  <data name="Tab_CredentialProvider" xml:space="preserve"><value>凭据提供程序</value></data>
+  <data name="Tab_Maintenance" xml:space="preserve"><value>维护</value></data>
+
+  <!-- Shared labels -->
+  <data name="Label_Username" xml:space="preserve"><value>用户名</value></data>
+  <data name="Label_Otp" xml:space="preserve"><value>动态口令</value></data>
+  <data name="Label_TimeoutSeconds" xml:space="preserve"><value>超时（秒）</value></data>
+  <data name="Label_TokenType" xml:space="preserve"><value>令牌类型</value></data>
+  <data name="Label_Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Label_Created" xml:space="preserve"><value>创建时间</value></data>
+  <data name="Label_OtpDigits" xml:space="preserve"><value>口令位数</value></data>
+  <data name="Label_Description" xml:space="preserve"><value>描述</value></data>
+  <data name="Label_TokenId" xml:space="preserve"><value>令牌编号</value></data>
+  <data name="Label_Password" xml:space="preserve"><value>密码</value></data>
+  <data name="Label_LogonScope" xml:space="preserve"><value>登录范围</value></data>
+  <data name="Label_LogonProviders" xml:space="preserve"><value>登录提供程序</value></data>
+  <data name="Label_UnlockScope" xml:space="preserve"><value>解锁范围</value></data>
+  <data name="Label_UnlockProviders" xml:space="preserve"><value>解锁提供程序</value></data>
+  <data name="Label_NewUser" xml:space="preserve"><value>新用户</value></data>
+  <data name="Label_Language" xml:space="preserve"><value>语言</value></data>
+  <data name="Language_SystemDefault" xml:space="preserve"><value>系统默认</value></data>
+  <data name="Language_English" xml:space="preserve"><value>English</value></data>
+  <data name="Language_ChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Message_LanguageRestartRequired" xml:space="preserve"><value>新语言将在应用重启后生效。是否立即重启？</value></data>
+  <data name="Message_LanguageChangedToSystemDefault" xml:space="preserve"><value>已重置为系统默认语言。重启后生效，是否立即重启？</value></data>
+  <data name="Dialog_LanguageChangeTitle" xml:space="preserve"><value>语言切换</value></data>
+
+  <!-- Sections -->
+  <data name="Section_AuthenticationTest" xml:space="preserve"><value>身份验证测试</value></data>
+  <data name="Section_Result" xml:space="preserve"><value>结果</value></data>
+  <data name="Section_Users" xml:space="preserve"><value>用户</value></data>
+  <data name="Section_UserDetails" xml:space="preserve"><value>用户详情</value></data>
+  <data name="Section_Details" xml:space="preserve"><value>详情</value></data>
+  <data name="Section_TokenList" xml:space="preserve"><value>令牌列表</value></data>
+  <data name="Section_TokenOperations" xml:space="preserve"><value>令牌操作</value></data>
+  <data name="Section_LogViewer" xml:space="preserve"><value>日志查看</value></data>
+  <data name="Section_AdLdapIntegration" xml:space="preserve"><value>AD/LDAP 集成</value></data>
+  <data name="Section_AuthenticationFlow" xml:space="preserve"><value>身份验证流程</value></data>
+  <data name="Section_BackupRestore" xml:space="preserve"><value>备份与恢复</value></data>
+  <data name="Section_Cleanup" xml:space="preserve"><value>清理</value></data>
+  <data name="Section_Output" xml:space="preserve"><value>输出</value></data>
+
+  <!-- Buttons -->
+  <data name="Button_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Button_Refresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="Button_Create" xml:space="preserve"><value>创建</value></data>
+  <data name="Button_Verify" xml:space="preserve"><value>验证</value></data>
+  <data name="Button_Activate" xml:space="preserve"><value>启用</value></data>
+  <data name="Button_Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="Button_Lock" xml:space="preserve"><value>锁定</value></data>
+  <data name="Button_Unlock" xml:space="preserve"><value>解锁</value></data>
+  <data name="Button_Resync" xml:space="preserve"><value>重新同步</value></data>
+  <data name="Button_QrCode" xml:space="preserve"><value>二维码</value></data>
+  <data name="Button_DisablePin" xml:space="preserve"><value>禁用 PIN</value></data>
+  <data name="Button_Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Button_Assign" xml:space="preserve"><value>分配</value></data>
+  <data name="Button_Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="Button_ShowLog" xml:space="preserve"><value>显示日志</value></data>
+  <data name="Button_ClearLog" xml:space="preserve"><value>清空日志</value></data>
+  <data name="Button_ErrorCodes" xml:space="preserve"><value>错误码</value></data>
+  <data name="Button_Version" xml:space="preserve"><value>版本</value></data>
+  <data name="Button_LdapCheck" xml:space="preserve"><value>检查连接</value></data>
+  <data name="Button_LdapUsersList" xml:space="preserve"><value>列出 LDAP 用户</value></data>
+  <data name="Button_LdapSync" xml:space="preserve"><value>同步用户</value></data>
+  <data name="Button_Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Button_BackupConfig" xml:space="preserve"><value>备份配置</value></data>
+  <data name="Button_RestoreConfig" xml:space="preserve"><value>恢复配置</value></data>
+  <data name="Button_PurgeLock" xml:space="preserve"><value>清理锁定文件</value></data>
+  <data name="Button_PurgeLdapCache" xml:space="preserve"><value>清理 LDAP 缓存</value></data>
+  <data name="Button_CopyUrl" xml:space="preserve"><value>复制链接</value></data>
+  <data name="Button_Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Status_Copied" xml:space="preserve"><value>已复制</value></data>
+  <data name="Status_CopyFailed" xml:space="preserve"><value>复制失败</value></data>
+
+  <!-- Combo options -->
+  <data name="Option_LocalAndRemote" xml:space="preserve"><value>本地与远程</value></data>
+  <data name="Option_RemoteDesktopOnly" xml:space="preserve"><value>仅远程桌面</value></data>
+  <data name="Option_LocalOnly" xml:space="preserve"><value>仅本地</value></data>
+  <data name="Option_Disabled" xml:space="preserve"><value>已禁用</value></data>
+  <data name="Option_MultiOtpOnly" xml:space="preserve"><value>仅 multiOTP</value></data>
+  <data name="Option_OtherProvidersAllowed" xml:space="preserve"><value>允许其他提供程序</value></data>
+
+  <!-- Checkboxes -->
+  <data name="Check_UseVerifySwitch" xml:space="preserve"><value>使用 -verify 命令</value></data>
+  <data name="Check_TwoStepHideOtp" xml:space="preserve"><value>在第二步中要求输入动态口令</value></data>
+
+  <!-- Status / messages -->
+  <data name="Status_Ready" xml:space="preserve"><value>就绪</value></data>
+  <data name="Status_OperationInProgress" xml:space="preserve"><value>{0}…</value></data>
+  <data name="Status_NoTestRun" xml:space="preserve"><value>尚未进行测试</value></data>
+  <data name="Status_CancelingOperation" xml:space="preserve"><value>正在取消当前操作…</value></data>
+
+  <data name="Message_EnterUsername" xml:space="preserve"><value>请输入新用户的名称。</value></data>
+  <data name="Message_EnterTokenIdToDelete" xml:space="preserve"><value>请输入要删除的令牌编号。</value></data>
+  <data name="Message_EnterBackupPassword" xml:space="preserve"><value>请先输入备份密码。</value></data>
+  <data name="Message_EnterRestorePassword" xml:space="preserve"><value>请输入用于恢复的备份密码。</value></data>
+  <data name="Message_UserCreated" xml:space="preserve"><value>已创建用户 {0}（TOTP 令牌，无前缀 PIN）{1}。</value></data>
+  <data name="Message_UserCreationCanceled" xml:space="preserve"><value>已取消创建用户："{0}" 与任何 Windows 账户都不匹配。</value></data>
+  <data name="Message_UserCreationFailed" xml:space="preserve"><value>创建用户失败。{0}</value></data>
+  <data name="Message_TwoOtpCodesRequired" xml:space="preserve"><value>重新同步需要输入两个连续的动态口令。</value></data>
+  <data name="Message_TokenResynchronized" xml:space="preserve"><value>已为 {0} 重新同步令牌。</value></data>
+  <data name="Message_ResyncFailed" xml:space="preserve"><value>重新同步失败。{0}</value></data>
+  <data name="Message_TokenNoQrCode" xml:space="preserve"><value>此令牌无法通过二维码进行配置。{0}</value></data>
+  <data name="Message_QrCodeShown" xml:space="preserve"><value>已显示 {0} 的配置信息。</value></data>
+  <data name="Message_PrefixPinDisabled" xml:space="preserve"><value>已为 {0} 禁用前缀 PIN，现在只需输入动态口令即可验证。</value></data>
+  <data name="Message_DisablePinFailed" xml:space="preserve"><value>禁用 PIN 失败。{0}</value></data>
+  <data name="Message_SelectUserToResync" xml:space="preserve"><value>请先选择一个要重新同步的用户。</value></data>
+  <data name="Message_SelectUserForQrCode" xml:space="preserve"><value>请先选择一个要显示配置二维码的用户。</value></data>
+  <data name="Message_SelectUserToDisablePin" xml:space="preserve"><value>请先选择一个要禁用前缀 PIN 的用户。</value></data>
+  <data name="Message_SelectUserToDelete" xml:space="preserve"><value>请先选择一个要删除的用户。</value></data>
+  <data name="Message_SelectUserFirst" xml:space="preserve"><value>请先选择一个用户。</value></data>
+  <data name="Message_UserDeleted" xml:space="preserve"><value>已删除用户 {0}。</value></data>
+  <data name="Message_UserListFailed" xml:space="preserve"><value>获取用户列表失败。{0}</value></data>
+  <data name="Message_NoUsersReturned" xml:space="preserve"><value>未返回任何用户。</value></data>
+  <data name="Message_UsersLoaded" xml:space="preserve"><value>已加载 {0} 个用户。</value></data>
+  <data name="Message_UserDetailFailed" xml:space="preserve"><value>获取用户详情失败。{0}</value></data>
+  <data name="Message_DetailsLoaded" xml:space="preserve"><value>已加载 {0} 的详情。</value></data>
+  <data name="Message_UserActionSucceeded" xml:space="preserve"><value>用户 {0}：{1} 成功。</value></data>
+  <data name="Message_UserActionFailed" xml:space="preserve"><value>{0} 失败。{1}</value></data>
+  <data name="Message_TokenListLoaded" xml:space="preserve"><value>令牌列表已加载。</value></data>
+  <data name="Message_NoTokensReturned" xml:space="preserve"><value>未返回任何令牌。</value></data>
+  <data name="Message_TokensLoaded" xml:space="preserve"><value>已加载 {0} 个令牌。</value></data>
+  <data name="Message_TokenAssigned" xml:space="preserve"><value>已将令牌 {0} 分配给 {1}。</value></data>
+  <data name="Message_TokenRemoved" xml:space="preserve"><value>已从 {0} 身上移除令牌。</value></data>
+  <data name="Message_TokenDeleted" xml:space="preserve"><value>已删除令牌 {0}。</value></data>
+  <data name="Message_LogLoaded" xml:space="preserve"><value>日志已加载。</value></data>
+  <data name="Message_LogCleared" xml:space="preserve"><value>日志已清空。</value></data>
+  <data name="Message_ErrorCodesLoaded" xml:space="preserve"><value>错误码已加载。</value></data>
+  <data name="Message_VersionLoaded" xml:space="preserve"><value>版本信息已加载。</value></data>
+  <data name="Message_SettingsSaved" xml:space="preserve"><value>凭据提供程序设置已保存。</value></data>
+  <data name="Message_SettingsNotSaved" xml:space="preserve"><value>设置未保存。</value></data>
+  <data name="Message_BackupCreated" xml:space="preserve"><value>备份已创建。</value></data>
+  <data name="Message_ConfigurationRestored" xml:space="preserve"><value>配置已恢复。</value></data>
+  <data name="Message_LockFolderPurged" xml:space="preserve"><value>锁定文件夹已清理。</value></data>
+  <data name="Message_LdapSyncFinished" xml:space="preserve"><value>LDAP 同步已完成。</value></data>
+  <data name="Message_LdapCheckFinished" xml:space="preserve"><value>LDAP 连接检查已完成。</value></data>
+  <data name="Message_LdapUserListLoaded" xml:space="preserve"><value>LDAP 用户列表已加载。</value></data>
+  <data name="Message_LdapCachePurged" xml:space="preserve"><value>LDAP 缓存已清理。</value></data>
+  <data name="Message_AuthenticationAccepted" xml:space="preserve"><value>身份验证通过。</value></data>
+  <data name="Message_AuthenticationRefused" xml:space="preserve"><value>身份验证被拒绝。{0}</value></data>
+  <data name="Message_AuthenticationRefusedExitCode" xml:space="preserve"><value>身份验证被拒绝。退出码：{0}</value></data>
+  <data name="Message_OperationTimedOut" xml:space="preserve"><value>操作超时。</value></data>
+  <data name="Message_OperationCanceled" xml:space="preserve"><value>操作已取消。</value></data>
+  <data name="Message_OperationFailedWithType" xml:space="preserve"><value>操作失败。{0}。</value></data>
+  <data name="Message_MultiotpNotFound" xml:space="preserve"><value>在 MultiOtpManager.exe 旁边未找到 multiotp.exe。</value></data>
+
+  <!-- Confirmation dialog text -->
+  <data name="Dialog_DeleteUserTitle" xml:space="preserve"><value>删除用户</value></data>
+  <data name="Dialog_DeleteUserMessage" xml:space="preserve"><value>确定删除用户 {0}？此操作将永久移除该用户及其关联的令牌数据。</value></data>
+  <data name="Dialog_DeleteTokenTitle" xml:space="preserve"><value>删除令牌</value></data>
+  <data name="Dialog_DeleteTokenMessage" xml:space="preserve"><value>确定删除令牌 {0}？此操作无法撤销。</value></data>
+  <data name="Dialog_ClearLogTitle" xml:space="preserve"><value>清空日志</value></data>
+  <data name="Dialog_ClearLogMessage" xml:space="preserve"><value>确定要清空 multiOTP 日志吗？</value></data>
+  <data name="Dialog_LdapSyncTitle" xml:space="preserve"><value>LDAP 同步</value></data>
+  <data name="Dialog_LdapSyncMessage" xml:space="preserve"><value>将 AD/LDAP 用户同步到 multiOTP 用户库吗？已有本地用户的信息可能会被更新。</value></data>
+  <data name="Dialog_BackupTitle" xml:space="preserve"><value>备份配置</value></data>
+  <data name="Dialog_BackupMessage" xml:space="preserve"><value>确定创建 multiOTP 配置的加密备份吗？</value></data>
+  <data name="Dialog_RestoreTitle" xml:space="preserve"><value>恢复配置</value></data>
+  <data name="Dialog_RestoreMessage" xml:space="preserve"><value>确定从备份恢复 multiOTP 配置吗？当前配置和用户可能会被覆盖。</value></data>
+  <data name="Dialog_PurgeLocksTitle" xml:space="preserve"><value>清理锁定</value></data>
+  <data name="Dialog_PurgeLocksMessage" xml:space="preserve"><value>确定清理锁定文件夹吗？被锁定的用户和令牌将重新可用。</value></data>
+  <data name="Dialog_PurgeLdapCacheTitle" xml:space="preserve"><value>清理 LDAP 缓存</value></data>
+  <data name="Dialog_PurgeLdapCacheMessage" xml:space="preserve"><value>确定清理 LDAP 缓存文件夹吗？</value></data>
+  <data name="Dialog_ResyncTokenTitle" xml:space="preserve"><value>重新同步令牌</value></data>
+  <data name="Dialog_ResyncTokenMessage" xml:space="preserve"><value>请依次输入 {0} 的令牌连续生成的两个动态口令。两个口令都必须是未使用过的。</value></data>
+  <data name="Prompt_FirstOtpCode" xml:space="preserve"><value>第一个动态口令</value></data>
+  <data name="Prompt_SecondOtpCode" xml:space="preserve"><value>第二个动态口令</value></data>
+  <data name="Prompt_Ok" xml:space="preserve"><value>确定</value></data>
+  <data name="Dialog_UserNotFoundTitle" xml:space="preserve"><value>在本机未找到该用户</value></data>
+  <data name="Dialog_UserNotFoundMessage" xml:space="preserve"><value>在本机{1}上未找到名为 "{0}" 的 Windows 账户。multiOTP 凭据提供程序只在 Windows 账户登录之后才会运行，因此在创建该 Windows 账户之前，该用户永远不会被要求输入动态口令。是否仍然创建该 multiOTP 条目？</value></data>
+  <data name="Dialog_SettingsNotSavedTitle" xml:space="preserve"><value>设置未保存</value></data>
+  <data name="Dialog_QrCodeTitle" xml:space="preserve"><value>配置 - {0}</value></data>
+  <data name="Dialog_QrCodeHint" xml:space="preserve"><value>请使用 Google Authenticator、FreeOTP 或任何兼容的身份验证应用扫描此二维码。码中包含令牌密钥，请勿泄露给他人。</value></data>
+  <data name="Dialog_QrCodeErrorFallback" xml:space="preserve"><value>无法生成二维码（{0}）。请改用下方的配置链接。</value></data>
+  <data name="Label_ProvisioningUrl" xml:space="preserve"><value>配置链接</value></data>
+
+  <!-- Output panel formatting -->
+  <data name="Output_ExitCodeWithMessage" xml:space="preserve"><value>退出码：{0}（{1}）</value></data>
+  <data name="Output_StandardOutputHeader" xml:space="preserve"><value>标准输出：</value></data>
+  <data name="Output_StandardErrorHeader" xml:space="preserve"><value>标准错误：</value></data>
+
+  <!-- Friendly multiOTP exit code descriptions -->
+  <data name="Code_0" xml:space="preserve"><value>成功。</value></data>
+  <data name="Code_11" xml:space="preserve"><value>用户已成功创建或更新。</value></data>
+  <data name="Code_12" xml:space="preserve"><value>用户已成功删除。</value></data>
+  <data name="Code_13" xml:space="preserve"><value>用户 PIN 已成功修改。</value></data>
+  <data name="Code_14" xml:space="preserve"><value>令牌已成功重新同步。</value></data>
+  <data name="Code_15" xml:space="preserve"><value>令牌定义文件已导入。</value></data>
+  <data name="Code_16" xml:space="preserve"><value>已创建二维码。</value></data>
+  <data name="Code_17" xml:space="preserve"><value>已创建配置链接。</value></data>
+  <data name="Code_18" xml:space="preserve"><value>已收到静态口令请求。</value></data>
+  <data name="Code_19" xml:space="preserve"><value>操作已完成。</value></data>
+  <data name="Code_20" xml:space="preserve"><value>该用户已被加入黑名单。</value></data>
+  <data name="Code_21" xml:space="preserve"><value>该用户不存在。</value></data>
+  <data name="Code_22" xml:space="preserve"><value>该用户已存在。</value></data>
+  <data name="Code_23" xml:space="preserve"><value>令牌算法无效。</value></data>
+  <data name="Code_24" xml:space="preserve"><value>用户或令牌已被锁定（重试次数过多）。</value></data>
+  <data name="Code_25" xml:space="preserve"><value>用户被延迟（重试次数过多）。</value></data>
+  <data name="Code_26" xml:space="preserve"><value>该令牌已被使用过。</value></data>
+  <data name="Code_27" xml:space="preserve"><value>令牌重新同步失败。</value></data>
+  <data name="Code_28" xml:space="preserve"><value>无法写入修改。</value></data>
+  <data name="Code_29" xml:space="preserve"><value>该令牌不存在。</value></data>
+  <data name="Code_30" xml:space="preserve"><value>缺少必需的参数。</value></data>
+  <data name="Code_31" xml:space="preserve"><value>令牌定义文件不存在。</value></data>
+  <data name="Code_32" xml:space="preserve"><value>令牌定义文件未被导入。</value></data>
+  <data name="Code_33" xml:space="preserve"><value>加密密钥不匹配。</value></data>
+  <data name="Code_34" xml:space="preserve"><value>关联的用户不存在。</value></data>
+  <data name="Code_35" xml:space="preserve"><value>用户未被创建。</value></data>
+  <data name="Code_36" xml:space="preserve"><value>该令牌不存在。</value></data>
+  <data name="Code_37" xml:space="preserve"><value>该令牌已被分配。</value></data>
+  <data name="Code_38" xml:space="preserve"><value>该用户已被禁用。</value></data>
+  <data name="Code_39" xml:space="preserve"><value>操作已被中止。</value></data>
+  <data name="Code_40" xml:space="preserve"><value>SQL 查询错误。</value></data>
+  <data name="Code_41" xml:space="preserve"><value>SQL 错误。</value></data>
+  <data name="Code_42" xml:space="preserve"><value>该键不在表结构中。</value></data>
+  <data name="Code_43" xml:space="preserve"><value>无法更新 SQL 条目。</value></data>
+  <data name="Code_58" xml:space="preserve"><value>缺少文件。</value></data>
+  <data name="Code_59" xml:space="preserve"><value>恢复密码不正确。</value></data>
+  <data name="Code_60" xml:space="preserve"><value>未提供短信验证码的发送地址。</value></data>
+  <data name="Code_61" xml:space="preserve"><value>发送短信验证码时发生错误。</value></data>
+  <data name="Code_62" xml:space="preserve"><value>不支持该短信服务提供商。</value></data>
+  <data name="Code_63" xml:space="preserve"><value>短信验证码已过期。</value></data>
+  <data name="Code_64" xml:space="preserve"><value>短信验证码暂时无法重发。</value></data>
+  <data name="Code_65" xml:space="preserve"><value>不允许请求短信验证码。</value></data>
+  <data name="Code_66" xml:space="preserve"><value>不允许请求邮件验证码。</value></data>
+  <data name="Code_67" xml:space="preserve"><value>未提供邮件验证码的发送地址。</value></data>
+  <data name="Code_68" xml:space="preserve"><value>发送邮件验证码时发生错误。</value></data>
+  <data name="Code_69" xml:space="preserve"><value>邮件发送失败。</value></data>
+  <data name="Code_70" xml:space="preserve"><value>服务器身份验证错误。</value></data>
+  <data name="Code_71" xml:space="preserve"><value>服务器请求格式不正确。</value></data>
+  <data name="Code_72" xml:space="preserve"><value>服务器返回格式不正确。</value></data>
+  <data name="Code_73" xml:space="preserve"><value>未配置电子邮件 SMTP 服务器。</value></data>
+  <data name="Code_79" xml:space="preserve"><value>AD/LDAP 连接错误。</value></data>
+  <data name="Code_80" xml:space="preserve"><value>服务器缓存错误。</value></data>
+  <data name="Code_81" xml:space="preserve"><value>缓存对该用户而言已过期，账户已被自动锁定。</value></data>
+  <data name="Code_82" xml:space="preserve"><value>当前设备不允许该用户。</value></data>
+  <data name="Code_88" xml:space="preserve"><value>设备未定义为高可用从节点。</value></data>
+  <data name="Code_89" xml:space="preserve"><value>设备未定义为高可用主节点。</value></data>
+  <data name="Code_90" xml:space="preserve"><value>AD/LDAP 身份验证失败。</value></data>
+  <data name="Code_91" xml:space="preserve"><value>身份验证失败（此处不允许 without2FA 令牌）。</value></data>
+  <data name="Code_92" xml:space="preserve"><value>身份验证失败（口令错误）。</value></data>
+  <data name="Code_93" xml:space="preserve"><value>身份验证失败（基于时间的令牌可能失步）。</value></data>
+  <data name="Code_94" xml:space="preserve"><value>API 请求错误。</value></data>
+  <data name="Code_95" xml:space="preserve"><value>API 身份验证失败。</value></data>
+  <data name="Code_96" xml:space="preserve"><value>推送身份验证超时。</value></data>
+  <data name="Code_97" xml:space="preserve"><value>推送身份验证被拒绝。</value></data>
+  <data name="Code_98" xml:space="preserve"><value>身份验证失败（令牌长度错误）。</value></data>
+  <data name="Code_99" xml:space="preserve"><value>身份验证失败（未知错误）。</value></data>
+  <data name="Code_Unknown" xml:space="preserve"><value>退出码 {0}。</value></data>
+  <data name="Message_DeleteFailed" xml:space="preserve"><value>删除失败。{0}</value></data>
+  <data name="Message_CommandFailed" xml:space="preserve"><value>命令执行失败。{0}</value></data>
+</root>

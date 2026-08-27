@@ -1,4 +1,5 @@
 using MultiOtpManager.Core;
+using MultiOtpManager.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using MultiOtpManager.Core;
 
 namespace MultiOtpManager
 {
@@ -17,6 +19,8 @@ namespace MultiOtpManager
         private readonly MultiOtpCliClient cliClient;
         private readonly CredentialProviderRegistryService registryService;
         private readonly SystemUserProbe systemUserProbe;
+        private AppSettings appSettings;
+        private bool suppressLanguageChangeHandler;
         private Button[] actionButtons;
         private CancellationTokenSource currentOperationCancellation;
         private bool refreshingUsers;
@@ -42,7 +46,93 @@ namespace MultiOtpManager
                 LdapCheckBtn, LdapUsersListBtn, LdapSyncBtn,
                 SaveSettingsButton, BackupBtn, RestoreBtn, PurgeLockBtn, PurgeLdapCacheBtn
             };
+            appSettings = AppSettings.Load();
+            InitializeLanguageComboBox();
             LoadSettings();
+        }
+
+        private void InitializeLanguageComboBox()
+        {
+            // Match the ComboBox selection to the saved language without
+            // triggering SelectionChanged (which would prompt to restart).
+            suppressLanguageChangeHandler = true;
+            try
+            {
+                string saved = appSettings.Language ?? string.Empty;
+                foreach (object rawItem in LanguageComboBox.Items)
+                {
+                    ComboBoxItem candidate = rawItem as ComboBoxItem;
+                    if (candidate != null && string.Equals((string)candidate.Tag, saved, StringComparison.OrdinalIgnoreCase))
+                    {
+                        LanguageComboBox.SelectedItem = candidate;
+                        return;
+                    }
+                }
+                if (LanguageComboBox.Items.Count > 0)
+                {
+                    LanguageComboBox.SelectedIndex = 0;
+                }
+            }
+            finally
+            {
+                suppressLanguageChangeHandler = false;
+            }
+        }
+
+        private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (suppressLanguageChangeHandler || appSettings == null)
+            {
+                return;
+            }
+
+            ComboBoxItem item = LanguageComboBox.SelectedItem as ComboBoxItem;
+            if (item == null)
+            {
+                return;
+            }
+
+            string newLanguage = (item.Tag as string) ?? string.Empty;
+            string currentLanguage = appSettings.Language ?? string.Empty;
+            if (string.Equals(newLanguage, currentLanguage, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            appSettings.Language = newLanguage;
+            appSettings.Save();
+
+            MessageBoxResult result = MessageBox.Show(
+                string.IsNullOrEmpty(newLanguage)
+                    ? Resources.Message_LanguageChangedToSystemDefault
+                    : Resources.Message_LanguageRestartRequired,
+                Resources.Dialog_LanguageChangeTitle,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                RestartApplication();
+            }
+        }
+
+        private static void RestartApplication()
+        {
+            try
+            {
+                string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = exePath,
+                    UseShellExecute = true,
+                });
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            Application.Current.Shutdown();
         }
 
         // --- Authentication ---
@@ -85,12 +175,24 @@ namespace MultiOtpManager
             await LoadUsersAsync();
         }
 
+        private async void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Auto-refresh the Users list every time the tab becomes active so the
+            // operator sees a fresh view without having to click Refresh first.
+            if (!ReferenceEquals(MainTabs.SelectedItem, UsersTab) || refreshingUsers)
+            {
+                return;
+            }
+
+            await LoadUsersAsync();
+        }
+
         private async void CreateUserButton_Click(object sender, RoutedEventArgs e)
         {
             string username = NewUsernameBox.Text.Trim();
             if (username.Length == 0)
             {
-                SetStatus("Enter a name for the new user.");
+                SetStatus(Resources.Message_EnterUsername);
                 NewUsernameBox.Focus();
                 return;
             }
@@ -102,12 +204,13 @@ namespace MultiOtpManager
             if (!systemAccountKnown)
             {
                 if (!ConfirmAction(
-                    "No Windows account named \"" + username + "\" was found on this machine" +
-                    (IsDomainJoined() ? " or in the joined domain" : string.Empty) +
-                    ". The multiOTP Credential Provider only runs after a Windows account has logged in, so this user will never be asked for an OTP until that account exists. Continue creating the multiOTP entry anyway?",
-                    "User not found on this system"))
+                    string.Format(
+                        Resources.Dialog_UserNotFoundMessage,
+                        username,
+                        IsDomainJoined() ? " or in the joined domain" : string.Empty),
+                    Resources.Dialog_UserNotFoundTitle))
                 {
-                    SetStatus("User creation canceled: \"" + username + "\" does not match a Windows account.");
+                    SetStatus(string.Format(Resources.Message_UserCreationCanceled, username));
                     return;
                 }
             }
@@ -128,13 +231,13 @@ namespace MultiOtpManager
                 if (IsSuccessCode(result.ExitCode))
                 {
                     string suffix = systemAccountKnown ? string.Empty : " (warning: no matching Windows account)";
-                    SetStatus("User " + username + " created (TOTP token, no prefix PIN)" + suffix + ".");
+                    SetStatus(string.Format(Resources.Message_UserCreated, username, suffix));
                     NewUsernameBox.Text = string.Empty;
                     await LoadUsersAsync();
                 }
                 else
                 {
-                    SetStatus("User creation failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resources.Message_UserCreationFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -213,15 +316,14 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus("Select a user to resync.");
+                SetStatus(Resources.Message_SelectUserToResync);
                 return;
             }
 
             PromptDialog dialog = new PromptDialog(
-                "Resync token",
-                "Enter two consecutive OTP codes generated by the token of " + summary.Name +
-                ". Both codes must be unused.",
-                new[] { "FIRST OTP CODE", "SECOND OTP CODE" });
+                Resources.Dialog_ResyncTokenTitle,
+                string.Format(Resources.Dialog_ResyncTokenMessage, summary.Name),
+                new[] { Resources.Prompt_FirstOtpCode, Resources.Prompt_SecondOtpCode });
             dialog.Owner = this;
             if (dialog.ShowDialog() != true)
             {
@@ -231,7 +333,7 @@ namespace MultiOtpManager
             string[] values = dialog.Values;
             if (values.Length < 2 || values[0].Length == 0 || values[1].Length == 0)
             {
-                SetStatus("Two OTP codes are required for resynchronization.");
+                SetStatus(Resources.Message_TwoOtpCodesRequired);
                 return;
             }
 
@@ -247,12 +349,12 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus("Token resynchronized for " + summary.Name + ".");
+                    SetStatus(string.Format(Resources.Message_TokenResynchronized, summary.Name));
                     await LoadUserDetailsAsync(summary);
                 }
                 else
                 {
-                    SetStatus("Resynchronization failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resources.Message_ResyncFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -266,7 +368,7 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus("Select a user to show the provisioning QR code.");
+                SetStatus(Resources.Message_SelectUserForQrCode);
                 return;
             }
 
@@ -291,7 +393,7 @@ namespace MultiOtpManager
                 if (!urlUsable)
                 {
                     UserDetailBox.Text = BuildCombinedOutput(urlResult);
-                    SetStatus("This token cannot be provisioned with a QR code. " + GetFriendlyExitText(urlResult.ExitCode));
+                    SetStatus(Resources.Message_TokenNoQrCode + " " + GetFriendlyExitText(urlResult.ExitCode));
                     return;
                 }
 
@@ -319,7 +421,7 @@ namespace MultiOtpManager
                 QrCodeDialog dialog = new QrCodeDialog(summary.Name, qrImage, urlLink, imageError);
                 dialog.Owner = this;
                 dialog.ShowDialog();
-                SetStatus("Provisioning information shown for " + summary.Name + ".");
+                SetStatus(string.Format(Resources.Message_QrCodeShown, summary.Name));
             }
             catch (Exception error)
             {
@@ -336,7 +438,7 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus("Select a user to disable the prefix PIN requirement.");
+                SetStatus(Resources.Message_SelectUserToDisablePin);
                 return;
             }
 
@@ -352,12 +454,12 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus("Prefix PIN disabled for " + summary.Name + ". They can now verify with just the OTP.");
+                    SetStatus(string.Format(Resources.Message_PrefixPinDisabled, summary.Name));
                     await LoadUserDetailsAsync(summary);
                 }
                 else
                 {
-                    SetStatus("Disable PIN failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resources.Message_DisablePinFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -371,13 +473,13 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus("Select a user to delete.");
+                SetStatus(Resources.Message_SelectUserToDelete);
                 return;
             }
 
             if (!ConfirmAction(
-                "Delete user " + summary.Name + "? This permanently removes the user and the associated token data.",
-                "Delete user"))
+                string.Format(Resources.Dialog_DeleteUserMessage, summary.Name),
+                Resources.Dialog_DeleteUserTitle))
             {
                 return;
             }
@@ -394,13 +496,13 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus("User " + summary.Name + " deleted.");
+                    SetStatus(string.Format(Resources.Message_UserDeleted, summary.Name));
                     ClearUserDetail();
                     await LoadUsersAsync();
                 }
                 else
                 {
-                    SetStatus("Delete failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resources.Message_DeleteFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -427,7 +529,7 @@ namespace MultiOtpManager
                 if (!IsSuccessCode(result.ExitCode))
                 {
                     UserDetailBox.Text = BuildCombinedOutput(result);
-                    SetStatus("User list command failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resources.Message_UserListFailed + " " + GetFriendlyExitText(result.ExitCode));
                     return;
                 }
 
@@ -442,10 +544,10 @@ namespace MultiOtpManager
 
                 if (users.Count == 0)
                 {
-                    UserDetailBox.Text = "No users were returned.";
+                    UserDetailBox.Text = Resources.Message_NoUsersReturned;
                 }
 
-                SetStatus(users.Count.ToString() + " user(s) loaded.");
+                SetStatus(string.Format(Resources.Message_UsersLoaded, users.Count));
             }
             catch (Exception error)
             {
@@ -472,7 +574,7 @@ namespace MultiOtpManager
                 {
                     ClearUserDetail();
                     UserDetailBox.Text = BuildCombinedOutput(result);
-                    SetStatus("User detail command failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resources.Message_UserDetailFailed + " " + GetFriendlyExitText(result.ExitCode));
                     return;
                 }
 
@@ -486,7 +588,7 @@ namespace MultiOtpManager
                 DetailDigitsText.Text = detail.OtpDigits;
                 DetailDescriptionText.Text = detail.Description;
                 UserDetailBox.Text = detail.ToMaskedDisplayText();
-                SetStatus("Details loaded for " + summary.Name + ".");
+                SetStatus(string.Format(Resources.Message_DetailsLoaded, summary.Name));
             }
             catch (Exception error)
             {
@@ -502,7 +604,7 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus("Select a user first.");
+                SetStatus(Resources.Message_SelectUserFirst);
                 return;
             }
 
@@ -518,12 +620,12 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus("User " + summary.Name + ": " + actionName + " succeeded.");
+                    SetStatus(string.Format(Resources.Message_UserActionSucceeded, summary.Name, actionName));
                     await LoadUserDetailsAsync(summary);
                 }
                 else
                 {
-                    SetStatus(actionName + " failed. " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(string.Format(Resources.Message_UserActionFailed, actionName, GetFriendlyExitText(result.ExitCode)));
                 }
             }
             catch (Exception error)
@@ -545,7 +647,30 @@ namespace MultiOtpManager
                         return cliClient.GetTokensAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, "Token list loaded.");
+                if (!IsSuccessCode(result.ExitCode))
+                {
+                    TokensListBox.ItemsSource = null;
+                    ShowOutputResult(TokensOutputBox, result, Resources.Message_TokenListLoaded);
+                    return;
+                }
+
+                List<string> tokens = result.StandardOutput
+                    .Split(new[] { '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(delegate(string line) { return line.Trim(); })
+                    .Where(delegate(string line) { return line.Length > 0; })
+                    .ToList();
+
+                TokensListBox.ItemsSource = tokens;
+                TokensOutputBox.Clear();
+
+                if (tokens.Count == 0)
+                {
+                    SetStatus(Resources.Message_NoTokensReturned);
+                }
+                else
+                {
+                    SetStatus(string.Format(Resources.Message_TokensLoaded, tokens.Count));
+                }
             }
             catch (Exception error)
             {
@@ -567,7 +692,7 @@ namespace MultiOtpManager
                         return cliClient.AssignTokenAsync(username, tokenId, GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, "Token " + tokenId + " assigned to " + username + ".");
+                ShowOutputResult(TokensOutputBox, result, string.Format(Resources.Message_TokenAssigned, tokenId, username));
             }
             catch (ArgumentException error)
             {
@@ -592,7 +717,7 @@ namespace MultiOtpManager
                         return cliClient.RemoveTokenAsync(username, GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, "Token removed from " + username + ".");
+                ShowOutputResult(TokensOutputBox, result, string.Format(Resources.Message_TokenRemoved, username));
             }
             catch (ArgumentException error)
             {
@@ -609,12 +734,12 @@ namespace MultiOtpManager
             string tokenId = TokenIdBox.Text.Trim();
             if (tokenId.Length == 0)
             {
-                SetStatus("Enter the token ID to delete.");
+                SetStatus(Resources.Message_EnterTokenIdToDelete);
                 TokenIdBox.Focus();
                 return;
             }
 
-            if (!ConfirmAction("Delete token " + tokenId + "? This cannot be undone.", "Delete token"))
+            if (!ConfirmAction(string.Format(Resources.Dialog_DeleteTokenMessage, tokenId), Resources.Dialog_DeleteTokenTitle))
             {
                 return;
             }
@@ -628,7 +753,18 @@ namespace MultiOtpManager
                         return cliClient.DeleteTokenAsync(tokenId, GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, "Token " + tokenId + " deleted.");
+                ShowOutputResult(TokensOutputBox, result, string.Format(Resources.Message_TokenDeleted, tokenId));
+
+                // Drop the deleted token from the visible list so the UI does not
+                // keep showing data that is no longer in the backend.
+                if (IsSuccessCode(result.ExitCode))
+                {
+                    List<string> current = TokensListBox.ItemsSource as List<string>;
+                    if (current != null)
+                    {
+                        TokensListBox.ItemsSource = current.Where(delegate(string token) { return token != tokenId; }).ToList();
+                    }
+                }
             }
             catch (Exception error)
             {
@@ -649,7 +785,7 @@ namespace MultiOtpManager
                         return cliClient.ShowLogAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, "Log loaded.");
+                ShowOutputResult(LogOutputBox, result, Resources.Message_LogLoaded);
             }
             catch (Exception error)
             {
@@ -659,7 +795,7 @@ namespace MultiOtpManager
 
         private async void ClearLogBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!ConfirmAction("Clear the multiOTP log?", "Clear log"))
+            if (!ConfirmAction(Resources.Dialog_ClearLogMessage, Resources.Dialog_ClearLogTitle))
             {
                 return;
             }
@@ -673,7 +809,7 @@ namespace MultiOtpManager
                         return cliClient.ClearLogAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, "Log cleared.");
+                ShowOutputResult(LogOutputBox, result, Resources.Message_LogCleared);
             }
             catch (Exception error)
             {
@@ -692,7 +828,7 @@ namespace MultiOtpManager
                         return cliClient.GetErrorCodesAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, "Error codes loaded.");
+                ShowOutputResult(LogOutputBox, result, Resources.Message_ErrorCodesLoaded);
             }
             catch (Exception error)
             {
@@ -711,7 +847,7 @@ namespace MultiOtpManager
                         return cliClient.GetVersionAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, "Version information loaded.");
+                ShowOutputResult(LogOutputBox, result, Resources.Message_VersionLoaded);
             }
             catch (Exception error)
             {
@@ -732,7 +868,7 @@ namespace MultiOtpManager
                         return cliClient.LdapCheckAsync(GetLdapTimeout(), token);
                     });
 
-                ShowOutputResult(LdapOutputBox, result, "LDAP connection check finished.");
+                ShowOutputResult(LdapOutputBox, result, Resources.Message_LdapCheckFinished);
             }
             catch (Exception error)
             {
@@ -751,7 +887,7 @@ namespace MultiOtpManager
                         return cliClient.LdapUsersListAsync(GetLdapTimeout(), token);
                     });
 
-                ShowOutputResult(LdapOutputBox, result, "LDAP user list loaded.");
+                ShowOutputResult(LdapOutputBox, result, Resources.Message_LdapUserListLoaded);
             }
             catch (Exception error)
             {
@@ -762,8 +898,8 @@ namespace MultiOtpManager
         private async void LdapSyncBtn_Click(object sender, RoutedEventArgs e)
         {
             if (!ConfirmAction(
-                "Synchronize AD/LDAP users into the multiOTP user store? Existing local users may be updated.",
-                "LDAP synchronization"))
+                Resources.Dialog_LdapSyncMessage,
+                Resources.Dialog_LdapSyncTitle))
             {
                 return;
             }
@@ -777,7 +913,7 @@ namespace MultiOtpManager
                         return cliClient.LdapUsersSyncAsync(GetLdapTimeout(), token);
                     });
 
-                ShowOutputResult(LdapOutputBox, result, "LDAP synchronization finished.");
+                ShowOutputResult(LdapOutputBox, result, Resources.Message_LdapSyncFinished);
                 if (IsSuccessCode(result.ExitCode))
                 {
                     await LoadUsersAsync();
@@ -802,16 +938,16 @@ namespace MultiOtpManager
 
                 registryService.Save(settings);
                 LoadSettings();
-                SetStatus("Credential Provider settings saved.");
+                SetStatus(Resources.Message_SettingsSaved);
             }
             catch (Exception error)
             {
                 MessageBox.Show(
                     GetSafeExceptionMessage(error),
-                    "Settings not saved",
+                    Resources.Dialog_SettingsNotSavedTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                SetStatus("Settings were not saved.");
+                SetStatus(Resources.Message_SettingsNotSaved);
             }
         }
 
@@ -822,12 +958,12 @@ namespace MultiOtpManager
             string password = BackupPasswordBox.Password;
             if (password.Length == 0)
             {
-                SetStatus("Enter a backup password first.");
+                SetStatus(Resources.Message_EnterBackupPassword);
                 BackupPasswordBox.Focus();
                 return;
             }
 
-            if (!ConfirmAction("Create an encrypted backup of the multiOTP configuration?", "Backup configuration"))
+            if (!ConfirmAction(Resources.Dialog_BackupMessage, Resources.Dialog_BackupTitle))
             {
                 return;
             }
@@ -841,7 +977,7 @@ namespace MultiOtpManager
                         return cliClient.BackupConfigAsync(password, GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, "Backup created.");
+                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_BackupCreated);
             }
             catch (Exception error)
             {
@@ -858,7 +994,7 @@ namespace MultiOtpManager
             string password = BackupPasswordBox.Password;
             if (password.Length == 0)
             {
-                SetStatus("Enter the backup password to restore from.");
+                SetStatus(Resources.Message_EnterRestorePassword);
                 BackupPasswordBox.Focus();
                 return;
             }
@@ -879,7 +1015,7 @@ namespace MultiOtpManager
                         return cliClient.RestoreConfigAsync(password, GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, "Configuration restored.");
+                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_ConfigurationRestored);
                 if (IsSuccessCode(result.ExitCode))
                 {
                     await LoadUsersAsync();
@@ -897,7 +1033,7 @@ namespace MultiOtpManager
 
         private async void PurgeLockBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!ConfirmAction("Purge the lock folder? Locked users and tokens become usable again.", "Purge locks"))
+            if (!ConfirmAction(Resources.Dialog_PurgeLocksMessage, Resources.Dialog_PurgeLocksTitle))
             {
                 return;
             }
@@ -911,7 +1047,7 @@ namespace MultiOtpManager
                         return cliClient.PurgeLockFolderAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, "Lock folder purged.");
+                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_LockFolderPurged);
             }
             catch (Exception error)
             {
@@ -921,7 +1057,7 @@ namespace MultiOtpManager
 
         private async void PurgeLdapCacheBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!ConfirmAction("Purge the LDAP cache folder?", "Purge LDAP cache"))
+            if (!ConfirmAction(Resources.Dialog_PurgeLdapCacheMessage, Resources.Dialog_PurgeLdapCacheTitle))
             {
                 return;
             }
@@ -935,7 +1071,7 @@ namespace MultiOtpManager
                         return cliClient.PurgeLdapCacheAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, "LDAP cache purged.");
+                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_LdapCachePurged);
             }
             catch (Exception error)
             {
@@ -951,7 +1087,7 @@ namespace MultiOtpManager
             if (source != null)
             {
                 source.Cancel();
-                SetStatus("Canceling current operation...");
+                SetStatus(Resources.Status_CancelingOperation);
             }
         }
 
@@ -972,14 +1108,14 @@ namespace MultiOtpManager
 
             try
             {
-                SetBusy(true, operationName + "...");
+                SetBusy(true, string.Format(Resources.Status_OperationInProgress, operationName));
                 return await operation(source.Token);
             }
             finally
             {
                 source.Dispose();
                 currentOperationCancellation = null;
-                SetBusy(false, "Ready");
+                SetBusy(false, Resources.Status_Ready);
             }
         }
 
@@ -991,14 +1127,14 @@ namespace MultiOtpManager
             if (result.ExitCode == 0)
             {
                 VerifyResultText.Foreground = FindResource("GoodColor") as Brush;
-                VerifyResultText.Text = "Authentication accepted.";
-                SetStatus("Authentication accepted.");
+                VerifyResultText.Text = Resources.Message_AuthenticationAccepted;
+                SetStatus(Resources.Message_AuthenticationAccepted);
                 return;
             }
 
             VerifyResultText.Foreground = FindResource("BadColor") as Brush;
-            VerifyResultText.Text = "Authentication refused. " + GetFriendlyExitText(result.ExitCode);
-            SetStatus("Authentication refused. Exit code: " + result.ExitCode);
+            VerifyResultText.Text = string.Format(Resources.Message_AuthenticationRefused, GetFriendlyExitText(result.ExitCode));
+            SetStatus(string.Format(Resources.Message_AuthenticationRefusedExitCode, result.ExitCode));
         }
 
         private void ShowVerifyFailure(string message)
@@ -1017,7 +1153,7 @@ namespace MultiOtpManager
             }
             else
             {
-                SetStatus("Command failed. " + GetFriendlyExitText(result.ExitCode));
+                SetStatus(string.Format(Resources.Message_CommandFailed, GetFriendlyExitText(result.ExitCode)));
             }
         }
 
@@ -1162,17 +1298,27 @@ namespace MultiOtpManager
         private static string BuildCombinedOutput(ProcessRunResult result)
         {
             List<string> sections = new List<string>();
-            sections.Add("Exit code: " + result.ExitCode);
+
+            // On success, lead with the friendly description. On failure, keep the
+            // raw exit code visible so it stays easy to match against multiOTP docs.
+            if (IsSuccessCode(result.ExitCode))
+            {
+                sections.Add(GetFriendlyExitText(result.ExitCode));
+            }
+            else
+            {
+                sections.Add(string.Format(Resources.Output_ExitCodeWithMessage, result.ExitCode, GetFriendlyExitText(result.ExitCode)));
+            }
 
             if (!string.IsNullOrWhiteSpace(result.StandardOutput))
             {
-                sections.Add("Standard output:");
+                sections.Add(Resources.Output_StandardOutputHeader);
                 sections.Add(MaskSensitiveText(result.StandardOutput.Trim()));
             }
 
             if (!string.IsNullOrWhiteSpace(result.StandardError))
             {
-                sections.Add("Standard error:");
+                sections.Add(Resources.Output_StandardErrorHeader);
                 sections.Add(MaskSensitiveText(result.StandardError.Trim()));
             }
 
@@ -1213,139 +1359,139 @@ namespace MultiOtpManager
             switch (exitCode)
             {
                 case 0:
-                    return "OK.";
+                    return Resources.Code_0;
                 case 11:
-                    return "User successfully created or updated.";
+                    return Resources.Code_11;
                 case 12:
-                    return "User successfully deleted.";
+                    return Resources.Code_12;
                 case 13:
-                    return "User PIN code successfully changed.";
+                    return Resources.Code_13;
                 case 14:
-                    return "Token resynchronized successfully.";
+                    return Resources.Code_14;
                 case 15:
-                    return "Token definition file imported.";
+                    return Resources.Code_15;
                 case 16:
-                    return "QR code created.";
+                    return Resources.Code_16;
                 case 17:
-                    return "Provisioning URL created.";
+                    return Resources.Code_17;
                 case 18:
-                    return "Static code request received.";
+                    return Resources.Code_18;
                 case 19:
-                    return "Operation completed.";
+                    return Resources.Code_19;
                 case 20:
-                    return "The user is blacklisted.";
+                    return Resources.Code_20;
                 case 21:
-                    return "The user does not exist.";
+                    return Resources.Code_21;
                 case 22:
-                    return "The user already exists.";
+                    return Resources.Code_22;
                 case 23:
-                    return "The token algorithm is invalid.";
+                    return Resources.Code_23;
                 case 24:
-                    return "The user or token is locked (too many tries).";
+                    return Resources.Code_24;
                 case 25:
-                    return "The user is delayed (too many tries).";
+                    return Resources.Code_25;
                 case 26:
-                    return "The token was already used.";
+                    return Resources.Code_26;
                 case 27:
-                    return "Token resynchronization failed.";
+                    return Resources.Code_27;
                 case 28:
-                    return "Unable to write the changes.";
+                    return Resources.Code_28;
                 case 29:
-                    return "The token does not exist.";
+                    return Resources.Code_29;
                 case 30:
-                    return "A required parameter is missing.";
+                    return Resources.Code_30;
                 case 31:
-                    return "The token definition file does not exist.";
+                    return Resources.Code_31;
                 case 32:
-                    return "The token definition file was not imported.";
+                    return Resources.Code_32;
                 case 33:
-                    return "Encryption key mismatch.";
+                    return Resources.Code_33;
                 case 34:
-                    return "The linked user does not exist.";
+                    return Resources.Code_34;
                 case 35:
-                    return "The user was not created.";
+                    return Resources.Code_35;
                 case 36:
-                    return "The token does not exist.";
+                    return Resources.Code_29;
                 case 37:
-                    return "The token is already assigned.";
+                    return Resources.Code_37;
                 case 38:
-                    return "The user is disabled.";
+                    return Resources.Code_38;
                 case 39:
-                    return "The operation was aborted.";
+                    return Resources.Code_39;
                 case 40:
-                    return "SQL query error.";
+                    return Resources.Code_40;
                 case 41:
-                    return "SQL error.";
+                    return Resources.Code_41;
                 case 42:
-                    return "The key is not in the table schema.";
+                    return Resources.Code_42;
                 case 43:
-                    return "The SQL entry cannot be updated.";
+                    return Resources.Code_43;
                 case 58:
-                    return "A file is missing.";
+                    return Resources.Code_58;
                 case 59:
-                    return "The restore password is incorrect.";
+                    return Resources.Code_59;
                 case 60:
-                    return "No information on where to send the SMS code.";
+                    return Resources.Code_60;
                 case 61:
-                    return "An error occurred while sending the SMS code.";
+                    return Resources.Code_61;
                 case 62:
-                    return "The SMS provider is not supported.";
+                    return Resources.Code_62;
                 case 63:
-                    return "The SMS code has expired.";
+                    return Resources.Code_63;
                 case 64:
-                    return "The SMS code cannot be resent right now.";
+                    return Resources.Code_64;
                 case 65:
-                    return "The SMS code request is not allowed.";
+                    return Resources.Code_65;
                 case 66:
-                    return "The email code request is not allowed.";
+                    return Resources.Code_66;
                 case 67:
-                    return "No information on where to send the email code.";
+                    return Resources.Code_67;
                 case 68:
-                    return "An error occurred while sending the email code.";
+                    return Resources.Code_68;
                 case 69:
-                    return "Failed to send the email.";
+                    return Resources.Code_69;
                 case 70:
-                    return "Server authentication error.";
+                    return Resources.Code_70;
                 case 71:
-                    return "Server request is not correctly formatted.";
+                    return Resources.Code_71;
                 case 72:
-                    return "Server answer is not correctly formatted.";
+                    return Resources.Code_72;
                 case 73:
-                    return "Email SMTP server is not defined.";
+                    return Resources.Code_73;
                 case 79:
-                    return "AD/LDAP connection error.";
+                    return Resources.Code_79;
                 case 80:
-                    return "Server cache error.";
+                    return Resources.Code_80;
                 case 81:
-                    return "Cache too old for this user, account autolocked.";
+                    return Resources.Code_81;
                 case 82:
-                    return "User is not allowed for this device.";
+                    return Resources.Code_82;
                 case 88:
-                    return "Device is not defined as a HA slave.";
+                    return Resources.Code_88;
                 case 89:
-                    return "Device is not defined as a HA master.";
+                    return Resources.Code_89;
                 case 90:
-                    return "AD/LDAP authentication failed.";
+                    return Resources.Code_90;
                 case 91:
-                    return "Authentication failed (without2FA token not authorized here).";
+                    return Resources.Code_91;
                 case 92:
-                    return "Authentication failed (bad password).";
+                    return Resources.Code_92;
                 case 93:
-                    return "Authentication failed (time based token probably out of sync).";
+                    return Resources.Code_93;
                 case 94:
-                    return "API request error.";
+                    return Resources.Code_94;
                 case 95:
-                    return "API authentication failed.";
+                    return Resources.Code_95;
                 case 96:
-                    return "Push authentication timeout.";
+                    return Resources.Code_96;
                 case 97:
-                    return "Push authentication denied.";
+                    return Resources.Code_97;
                 case 98:
-                    return "Authentication failed (wrong token length).";
+                    return Resources.Code_98;
                 case 99:
-                    return "Authentication failed (unknown error).";
+                    return Resources.Code_99;
                 default:
-                    return "Exit code " + exitCode + ".";
+                    return string.Format(Resources.Code_Unknown, exitCode);
             }
         }
 
@@ -1353,12 +1499,12 @@ namespace MultiOtpManager
         {
             if (exception is TimeoutException)
             {
-                return "The operation timed out.";
+                return Resources.Message_OperationTimedOut;
             }
 
             if (exception is OperationCanceledException)
             {
-                return "The operation was canceled.";
+                return Resources.Message_OperationCanceled;
             }
 
             if (exception is ArgumentException)
@@ -1368,10 +1514,10 @@ namespace MultiOtpManager
 
             if (exception is System.IO.FileNotFoundException)
             {
-                return "multiotp.exe was not found next to MultiOtpManager.exe.";
+                return Resources.Message_MultiotpNotFound;
             }
 
-            return "The operation failed. " + exception.GetType().Name + ".";
+            return string.Format(Resources.Message_OperationFailedWithType, exception.GetType().Name);
         }
 
         // Small modal dialog built in code (no XAML dependency) to collect one or
@@ -1432,7 +1578,7 @@ namespace MultiOtpManager
                 buttons.Margin = new Thickness(0, 6, 0, 0);
 
                 Button okButton = new Button();
-                okButton.Content = "OK";
+                okButton.Content = Resources.Prompt_Ok;
                 okButton.IsDefault = true;
                 okButton.MinWidth = 88;
                 okButton.Height = 30;
@@ -1440,7 +1586,6 @@ namespace MultiOtpManager
                 okButton.Click += delegate { DialogResult = true; };
 
                 Button cancelButton = new Button();
-                cancelButton.Content = "Cancel";
                 cancelButton.IsCancel = true;
                 cancelButton.MinWidth = 88;
                 cancelButton.Height = 30;
@@ -1478,7 +1623,7 @@ namespace MultiOtpManager
         {
             public QrCodeDialog(string username, BitmapImage qrImage, string urlLink, string imageError)
             {
-                Title = "Provisioning - " + username;
+                Title = string.Format(Resources.Dialog_QrCodeTitle, username);
                 Width = 460;
                 SizeToContent = SizeToContent.Height;
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -1490,7 +1635,7 @@ namespace MultiOtpManager
                 root.Margin = new Thickness(16);
 
                 TextBlock hint = new TextBlock();
-                hint.Text = "Scan the code with Google Authenticator, FreeOTP or any compatible authenticator app. The code contains the token secret: do not share it.";
+                hint.Text = Resources.Dialog_QrCodeHint;
                 hint.TextWrapping = TextWrapping.Wrap;
                 hint.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0x30, 0x38));
                 hint.Margin = new Thickness(0, 0, 0, 12);
@@ -1518,7 +1663,7 @@ namespace MultiOtpManager
                 else
                 {
                     TextBlock imageNote = new TextBlock();
-                    imageNote.Text = "The QR image could not be generated (" + imageError + "). Use the provisioning URL below instead.";
+                    imageNote.Text = string.Format(Resources.Dialog_QrCodeErrorFallback, imageError);
                     imageNote.TextWrapping = TextWrapping.Wrap;
                     imageNote.Foreground = new SolidColorBrush(Color.FromRgb(0xA3, 0x31, 0x31));
                     imageNote.Margin = new Thickness(0, 0, 0, 12);
@@ -1526,7 +1671,7 @@ namespace MultiOtpManager
                 }
 
                 TextBlock urlCaption = new TextBlock();
-                urlCaption.Text = "PROVISIONING URL";
+                urlCaption.Text = Resources.Label_ProvisioningUrl;
                 urlCaption.FontSize = 11;
                 urlCaption.Foreground = new SolidColorBrush(Color.FromRgb(0x61, 0x70, 0x7B));
                 urlCaption.Margin = new Thickness(0, 0, 0, 3);
@@ -1547,7 +1692,7 @@ namespace MultiOtpManager
                 buttons.Margin = new Thickness(0, 6, 0, 0);
 
                 Button copyButton = new Button();
-                copyButton.Content = "Copy URL";
+                copyButton.Content = Resources.Button_CopyUrl;
                 copyButton.MinWidth = 88;
                 copyButton.Height = 30;
                 copyButton.Margin = new Thickness(0, 0, 6, 0);
@@ -1556,16 +1701,16 @@ namespace MultiOtpManager
                     try
                     {
                         Clipboard.SetText(urlLink);
-                        copyButton.Content = "Copied";
+                        copyButton.Content = Resources.Status_Copied;
                     }
                     catch (Exception)
                     {
-                        copyButton.Content = "Copy failed";
+                        copyButton.Content = Resources.Status_CopyFailed;
                     }
                 };
 
                 Button closeButton = new Button();
-                closeButton.Content = "Close";
+                closeButton.Content = Resources.Button_Close;
                 closeButton.IsCancel = true;
                 closeButton.MinWidth = 88;
                 closeButton.Height = 30;

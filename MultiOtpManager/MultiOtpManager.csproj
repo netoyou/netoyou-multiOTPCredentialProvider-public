@@ -59,6 +59,7 @@
     </Compile>
     <Compile Include="Core\CredentialProviderRegistryService.cs" />
     <Compile Include="Core\MultiOtpCliClient.cs" />
+    <Compile Include="Core\AppSettings.cs" />
     <Compile Include="Core\MultiOtpProcessExecutor.cs" />
     <Compile Include="Core\UserModels.cs" />
     <Compile Include="Core\SystemUserProbe.cs" />
@@ -71,6 +72,21 @@
     <None Include="App.config" />
     <None Include="app.manifest" />
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <CustomToolNamespace>MultiOtpManager.Properties</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.zh-Hans.resx">
+      <CustomToolNamespace>MultiOtpManager.Properties</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
