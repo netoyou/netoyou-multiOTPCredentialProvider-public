@@ -1,5 +1,5 @@
 using MultiOtpManager.Core;
-using MultiOtpManager.Properties;
+using Resx = MultiOtpManager.Properties.Resources;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using MultiOtpManager.Core;
 
 namespace MultiOtpManager
 {
@@ -104,9 +103,9 @@ namespace MultiOtpManager
 
             MessageBoxResult result = MessageBox.Show(
                 string.IsNullOrEmpty(newLanguage)
-                    ? Resources.Message_LanguageChangedToSystemDefault
-                    : Resources.Message_LanguageRestartRequired,
-                Resources.Dialog_LanguageChangeTitle,
+                    ? Resx.Message_LanguageChangedToSystemDefault
+                    : Resx.Message_LanguageRestartRequired,
+                Resx.Dialog_LanguageChangeTitle,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Information);
 
@@ -192,7 +191,7 @@ namespace MultiOtpManager
             string username = NewUsernameBox.Text.Trim();
             if (username.Length == 0)
             {
-                SetStatus(Resources.Message_EnterUsername);
+                SetStatus(Resx.Message_EnterUsername);
                 NewUsernameBox.Focus();
                 return;
             }
@@ -205,12 +204,12 @@ namespace MultiOtpManager
             {
                 if (!ConfirmAction(
                     string.Format(
-                        Resources.Dialog_UserNotFoundMessage,
+                        Resx.Dialog_UserNotFoundMessage,
                         username,
                         IsDomainJoined() ? " or in the joined domain" : string.Empty),
-                    Resources.Dialog_UserNotFoundTitle))
+                    Resx.Dialog_UserNotFoundTitle))
                 {
-                    SetStatus(string.Format(Resources.Message_UserCreationCanceled, username));
+                    SetStatus(string.Format(Resx.Message_UserCreationCanceled, username));
                     return;
                 }
             }
@@ -231,13 +230,13 @@ namespace MultiOtpManager
                 if (IsSuccessCode(result.ExitCode))
                 {
                     string suffix = systemAccountKnown ? string.Empty : " (warning: no matching Windows account)";
-                    SetStatus(string.Format(Resources.Message_UserCreated, username, suffix));
+                    SetStatus(string.Format(Resx.Message_UserCreated, username, suffix));
                     NewUsernameBox.Text = string.Empty;
                     await LoadUsersAsync();
                 }
                 else
                 {
-                    SetStatus(Resources.Message_UserCreationFailed + " " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resx.Message_UserCreationFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -316,14 +315,14 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus(Resources.Message_SelectUserToResync);
+                SetStatus(Resx.Message_SelectUserToResync);
                 return;
             }
 
             PromptDialog dialog = new PromptDialog(
-                Resources.Dialog_ResyncTokenTitle,
-                string.Format(Resources.Dialog_ResyncTokenMessage, summary.Name),
-                new[] { Resources.Prompt_FirstOtpCode, Resources.Prompt_SecondOtpCode });
+                Resx.Dialog_ResyncTokenTitle,
+                string.Format(Resx.Dialog_ResyncTokenMessage, summary.Name),
+                new[] { Resx.Prompt_FirstOtpCode, Resx.Prompt_SecondOtpCode });
             dialog.Owner = this;
             if (dialog.ShowDialog() != true)
             {
@@ -333,7 +332,7 @@ namespace MultiOtpManager
             string[] values = dialog.Values;
             if (values.Length < 2 || values[0].Length == 0 || values[1].Length == 0)
             {
-                SetStatus(Resources.Message_TwoOtpCodesRequired);
+                SetStatus(Resx.Message_TwoOtpCodesRequired);
                 return;
             }
 
@@ -349,12 +348,12 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus(string.Format(Resources.Message_TokenResynchronized, summary.Name));
+                    SetStatus(string.Format(Resx.Message_TokenResynchronized, summary.Name));
                     await LoadUserDetailsAsync(summary);
                 }
                 else
                 {
-                    SetStatus(Resources.Message_ResyncFailed + " " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resx.Message_ResyncFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -368,7 +367,7 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus(Resources.Message_SelectUserForQrCode);
+                SetStatus(Resx.Message_SelectUserForQrCode);
                 return;
             }
 
@@ -393,7 +392,7 @@ namespace MultiOtpManager
                 if (!urlUsable)
                 {
                     UserDetailBox.Text = BuildCombinedOutput(urlResult);
-                    SetStatus(Resources.Message_TokenNoQrCode + " " + GetFriendlyExitText(urlResult.ExitCode));
+                    SetStatus(Resx.Message_TokenNoQrCode + " " + GetFriendlyExitText(urlResult.ExitCode));
                     return;
                 }
 
@@ -421,7 +420,7 @@ namespace MultiOtpManager
                 QrCodeDialog dialog = new QrCodeDialog(summary.Name, qrImage, urlLink, imageError);
                 dialog.Owner = this;
                 dialog.ShowDialog();
-                SetStatus(string.Format(Resources.Message_QrCodeShown, summary.Name));
+                SetStatus(string.Format(Resx.Message_QrCodeShown, summary.Name));
             }
             catch (Exception error)
             {
@@ -438,7 +437,7 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus(Resources.Message_SelectUserToDisablePin);
+                SetStatus(Resx.Message_SelectUserToDisablePin);
                 return;
             }
 
@@ -454,12 +453,12 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus(string.Format(Resources.Message_PrefixPinDisabled, summary.Name));
+                    SetStatus(string.Format(Resx.Message_PrefixPinDisabled, summary.Name));
                     await LoadUserDetailsAsync(summary);
                 }
                 else
                 {
-                    SetStatus(Resources.Message_DisablePinFailed + " " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resx.Message_DisablePinFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -473,13 +472,13 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus(Resources.Message_SelectUserToDelete);
+                SetStatus(Resx.Message_SelectUserToDelete);
                 return;
             }
 
             if (!ConfirmAction(
-                string.Format(Resources.Dialog_DeleteUserMessage, summary.Name),
-                Resources.Dialog_DeleteUserTitle))
+                string.Format(Resx.Dialog_DeleteUserMessage, summary.Name),
+                Resx.Dialog_DeleteUserTitle))
             {
                 return;
             }
@@ -496,13 +495,13 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus(string.Format(Resources.Message_UserDeleted, summary.Name));
+                    SetStatus(string.Format(Resx.Message_UserDeleted, summary.Name));
                     ClearUserDetail();
                     await LoadUsersAsync();
                 }
                 else
                 {
-                    SetStatus(Resources.Message_DeleteFailed + " " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resx.Message_DeleteFailed + " " + GetFriendlyExitText(result.ExitCode));
                 }
             }
             catch (Exception error)
@@ -529,7 +528,7 @@ namespace MultiOtpManager
                 if (!IsSuccessCode(result.ExitCode))
                 {
                     UserDetailBox.Text = BuildCombinedOutput(result);
-                    SetStatus(Resources.Message_UserListFailed + " " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resx.Message_UserListFailed + " " + GetFriendlyExitText(result.ExitCode));
                     return;
                 }
 
@@ -544,10 +543,10 @@ namespace MultiOtpManager
 
                 if (users.Count == 0)
                 {
-                    UserDetailBox.Text = Resources.Message_NoUsersReturned;
+                    UserDetailBox.Text = Resx.Message_NoUsersReturned;
                 }
 
-                SetStatus(string.Format(Resources.Message_UsersLoaded, users.Count));
+                SetStatus(string.Format(Resx.Message_UsersLoaded, users.Count));
             }
             catch (Exception error)
             {
@@ -574,7 +573,7 @@ namespace MultiOtpManager
                 {
                     ClearUserDetail();
                     UserDetailBox.Text = BuildCombinedOutput(result);
-                    SetStatus(Resources.Message_UserDetailFailed + " " + GetFriendlyExitText(result.ExitCode));
+                    SetStatus(Resx.Message_UserDetailFailed + " " + GetFriendlyExitText(result.ExitCode));
                     return;
                 }
 
@@ -588,7 +587,7 @@ namespace MultiOtpManager
                 DetailDigitsText.Text = detail.OtpDigits;
                 DetailDescriptionText.Text = detail.Description;
                 UserDetailBox.Text = detail.ToMaskedDisplayText();
-                SetStatus(string.Format(Resources.Message_DetailsLoaded, summary.Name));
+                SetStatus(string.Format(Resx.Message_DetailsLoaded, summary.Name));
             }
             catch (Exception error)
             {
@@ -604,7 +603,7 @@ namespace MultiOtpManager
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
-                SetStatus(Resources.Message_SelectUserFirst);
+                SetStatus(Resx.Message_SelectUserFirst);
                 return;
             }
 
@@ -620,12 +619,12 @@ namespace MultiOtpManager
                 UserDetailBox.Text = BuildCombinedOutput(result);
                 if (IsSuccessCode(result.ExitCode))
                 {
-                    SetStatus(string.Format(Resources.Message_UserActionSucceeded, summary.Name, actionName));
+                    SetStatus(string.Format(Resx.Message_UserActionSucceeded, summary.Name, actionName));
                     await LoadUserDetailsAsync(summary);
                 }
                 else
                 {
-                    SetStatus(string.Format(Resources.Message_UserActionFailed, actionName, GetFriendlyExitText(result.ExitCode)));
+                    SetStatus(string.Format(Resx.Message_UserActionFailed, actionName, GetFriendlyExitText(result.ExitCode)));
                 }
             }
             catch (Exception error)
@@ -650,7 +649,7 @@ namespace MultiOtpManager
                 if (!IsSuccessCode(result.ExitCode))
                 {
                     TokensListBox.ItemsSource = null;
-                    ShowOutputResult(TokensOutputBox, result, Resources.Message_TokenListLoaded);
+                    ShowOutputResult(TokensOutputBox, result, Resx.Message_TokenListLoaded);
                     return;
                 }
 
@@ -665,11 +664,11 @@ namespace MultiOtpManager
 
                 if (tokens.Count == 0)
                 {
-                    SetStatus(Resources.Message_NoTokensReturned);
+                    SetStatus(Resx.Message_NoTokensReturned);
                 }
                 else
                 {
-                    SetStatus(string.Format(Resources.Message_TokensLoaded, tokens.Count));
+                    SetStatus(string.Format(Resx.Message_TokensLoaded, tokens.Count));
                 }
             }
             catch (Exception error)
@@ -692,7 +691,7 @@ namespace MultiOtpManager
                         return cliClient.AssignTokenAsync(username, tokenId, GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, string.Format(Resources.Message_TokenAssigned, tokenId, username));
+                ShowOutputResult(TokensOutputBox, result, string.Format(Resx.Message_TokenAssigned, tokenId, username));
             }
             catch (ArgumentException error)
             {
@@ -717,7 +716,7 @@ namespace MultiOtpManager
                         return cliClient.RemoveTokenAsync(username, GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, string.Format(Resources.Message_TokenRemoved, username));
+                ShowOutputResult(TokensOutputBox, result, string.Format(Resx.Message_TokenRemoved, username));
             }
             catch (ArgumentException error)
             {
@@ -734,12 +733,12 @@ namespace MultiOtpManager
             string tokenId = TokenIdBox.Text.Trim();
             if (tokenId.Length == 0)
             {
-                SetStatus(Resources.Message_EnterTokenIdToDelete);
+                SetStatus(Resx.Message_EnterTokenIdToDelete);
                 TokenIdBox.Focus();
                 return;
             }
 
-            if (!ConfirmAction(string.Format(Resources.Dialog_DeleteTokenMessage, tokenId), Resources.Dialog_DeleteTokenTitle))
+            if (!ConfirmAction(string.Format(Resx.Dialog_DeleteTokenMessage, tokenId), Resx.Dialog_DeleteTokenTitle))
             {
                 return;
             }
@@ -753,7 +752,7 @@ namespace MultiOtpManager
                         return cliClient.DeleteTokenAsync(tokenId, GetTimeout(), token);
                     });
 
-                ShowOutputResult(TokensOutputBox, result, string.Format(Resources.Message_TokenDeleted, tokenId));
+                ShowOutputResult(TokensOutputBox, result, string.Format(Resx.Message_TokenDeleted, tokenId));
 
                 // Drop the deleted token from the visible list so the UI does not
                 // keep showing data that is no longer in the backend.
@@ -785,7 +784,7 @@ namespace MultiOtpManager
                         return cliClient.ShowLogAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, Resources.Message_LogLoaded);
+                ShowOutputResult(LogOutputBox, result, Resx.Message_LogLoaded);
             }
             catch (Exception error)
             {
@@ -795,7 +794,7 @@ namespace MultiOtpManager
 
         private async void ClearLogBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!ConfirmAction(Resources.Dialog_ClearLogMessage, Resources.Dialog_ClearLogTitle))
+            if (!ConfirmAction(Resx.Dialog_ClearLogMessage, Resx.Dialog_ClearLogTitle))
             {
                 return;
             }
@@ -809,7 +808,7 @@ namespace MultiOtpManager
                         return cliClient.ClearLogAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, Resources.Message_LogCleared);
+                ShowOutputResult(LogOutputBox, result, Resx.Message_LogCleared);
             }
             catch (Exception error)
             {
@@ -828,7 +827,7 @@ namespace MultiOtpManager
                         return cliClient.GetErrorCodesAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, Resources.Message_ErrorCodesLoaded);
+                ShowOutputResult(LogOutputBox, result, Resx.Message_ErrorCodesLoaded);
             }
             catch (Exception error)
             {
@@ -847,7 +846,7 @@ namespace MultiOtpManager
                         return cliClient.GetVersionAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(LogOutputBox, result, Resources.Message_VersionLoaded);
+                ShowOutputResult(LogOutputBox, result, Resx.Message_VersionLoaded);
             }
             catch (Exception error)
             {
@@ -868,7 +867,7 @@ namespace MultiOtpManager
                         return cliClient.LdapCheckAsync(GetLdapTimeout(), token);
                     });
 
-                ShowOutputResult(LdapOutputBox, result, Resources.Message_LdapCheckFinished);
+                ShowOutputResult(LdapOutputBox, result, Resx.Message_LdapCheckFinished);
             }
             catch (Exception error)
             {
@@ -887,7 +886,7 @@ namespace MultiOtpManager
                         return cliClient.LdapUsersListAsync(GetLdapTimeout(), token);
                     });
 
-                ShowOutputResult(LdapOutputBox, result, Resources.Message_LdapUserListLoaded);
+                ShowOutputResult(LdapOutputBox, result, Resx.Message_LdapUserListLoaded);
             }
             catch (Exception error)
             {
@@ -898,8 +897,8 @@ namespace MultiOtpManager
         private async void LdapSyncBtn_Click(object sender, RoutedEventArgs e)
         {
             if (!ConfirmAction(
-                Resources.Dialog_LdapSyncMessage,
-                Resources.Dialog_LdapSyncTitle))
+                Resx.Dialog_LdapSyncMessage,
+                Resx.Dialog_LdapSyncTitle))
             {
                 return;
             }
@@ -913,7 +912,7 @@ namespace MultiOtpManager
                         return cliClient.LdapUsersSyncAsync(GetLdapTimeout(), token);
                     });
 
-                ShowOutputResult(LdapOutputBox, result, Resources.Message_LdapSyncFinished);
+                ShowOutputResult(LdapOutputBox, result, Resx.Message_LdapSyncFinished);
                 if (IsSuccessCode(result.ExitCode))
                 {
                     await LoadUsersAsync();
@@ -938,16 +937,16 @@ namespace MultiOtpManager
 
                 registryService.Save(settings);
                 LoadSettings();
-                SetStatus(Resources.Message_SettingsSaved);
+                SetStatus(Resx.Message_SettingsSaved);
             }
             catch (Exception error)
             {
                 MessageBox.Show(
                     GetSafeExceptionMessage(error),
-                    Resources.Dialog_SettingsNotSavedTitle,
+                    Resx.Dialog_SettingsNotSavedTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                SetStatus(Resources.Message_SettingsNotSaved);
+                SetStatus(Resx.Message_SettingsNotSaved);
             }
         }
 
@@ -958,12 +957,12 @@ namespace MultiOtpManager
             string password = BackupPasswordBox.Password;
             if (password.Length == 0)
             {
-                SetStatus(Resources.Message_EnterBackupPassword);
+                SetStatus(Resx.Message_EnterBackupPassword);
                 BackupPasswordBox.Focus();
                 return;
             }
 
-            if (!ConfirmAction(Resources.Dialog_BackupMessage, Resources.Dialog_BackupTitle))
+            if (!ConfirmAction(Resx.Dialog_BackupMessage, Resx.Dialog_BackupTitle))
             {
                 return;
             }
@@ -977,7 +976,7 @@ namespace MultiOtpManager
                         return cliClient.BackupConfigAsync(password, GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_BackupCreated);
+                ShowOutputResult(MaintenanceOutputBox, result, Resx.Message_BackupCreated);
             }
             catch (Exception error)
             {
@@ -994,7 +993,7 @@ namespace MultiOtpManager
             string password = BackupPasswordBox.Password;
             if (password.Length == 0)
             {
-                SetStatus(Resources.Message_EnterRestorePassword);
+                SetStatus(Resx.Message_EnterRestorePassword);
                 BackupPasswordBox.Focus();
                 return;
             }
@@ -1015,7 +1014,7 @@ namespace MultiOtpManager
                         return cliClient.RestoreConfigAsync(password, GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_ConfigurationRestored);
+                ShowOutputResult(MaintenanceOutputBox, result, Resx.Message_ConfigurationRestored);
                 if (IsSuccessCode(result.ExitCode))
                 {
                     await LoadUsersAsync();
@@ -1033,7 +1032,7 @@ namespace MultiOtpManager
 
         private async void PurgeLockBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!ConfirmAction(Resources.Dialog_PurgeLocksMessage, Resources.Dialog_PurgeLocksTitle))
+            if (!ConfirmAction(Resx.Dialog_PurgeLocksMessage, Resx.Dialog_PurgeLocksTitle))
             {
                 return;
             }
@@ -1047,7 +1046,7 @@ namespace MultiOtpManager
                         return cliClient.PurgeLockFolderAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_LockFolderPurged);
+                ShowOutputResult(MaintenanceOutputBox, result, Resx.Message_LockFolderPurged);
             }
             catch (Exception error)
             {
@@ -1057,7 +1056,7 @@ namespace MultiOtpManager
 
         private async void PurgeLdapCacheBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (!ConfirmAction(Resources.Dialog_PurgeLdapCacheMessage, Resources.Dialog_PurgeLdapCacheTitle))
+            if (!ConfirmAction(Resx.Dialog_PurgeLdapCacheMessage, Resx.Dialog_PurgeLdapCacheTitle))
             {
                 return;
             }
@@ -1071,7 +1070,7 @@ namespace MultiOtpManager
                         return cliClient.PurgeLdapCacheAsync(GetTimeout(), token);
                     });
 
-                ShowOutputResult(MaintenanceOutputBox, result, Resources.Message_LdapCachePurged);
+                ShowOutputResult(MaintenanceOutputBox, result, Resx.Message_LdapCachePurged);
             }
             catch (Exception error)
             {
@@ -1087,7 +1086,7 @@ namespace MultiOtpManager
             if (source != null)
             {
                 source.Cancel();
-                SetStatus(Resources.Status_CancelingOperation);
+                SetStatus(Resx.Status_CancelingOperation);
             }
         }
 
@@ -1108,14 +1107,14 @@ namespace MultiOtpManager
 
             try
             {
-                SetBusy(true, string.Format(Resources.Status_OperationInProgress, operationName));
+                SetBusy(true, string.Format(Resx.Status_OperationInProgress, operationName));
                 return await operation(source.Token);
             }
             finally
             {
                 source.Dispose();
                 currentOperationCancellation = null;
-                SetBusy(false, Resources.Status_Ready);
+                SetBusy(false, Resx.Status_Ready);
             }
         }
 
@@ -1127,14 +1126,14 @@ namespace MultiOtpManager
             if (result.ExitCode == 0)
             {
                 VerifyResultText.Foreground = FindResource("GoodColor") as Brush;
-                VerifyResultText.Text = Resources.Message_AuthenticationAccepted;
-                SetStatus(Resources.Message_AuthenticationAccepted);
+                VerifyResultText.Text = Resx.Message_AuthenticationAccepted;
+                SetStatus(Resx.Message_AuthenticationAccepted);
                 return;
             }
 
             VerifyResultText.Foreground = FindResource("BadColor") as Brush;
-            VerifyResultText.Text = string.Format(Resources.Message_AuthenticationRefused, GetFriendlyExitText(result.ExitCode));
-            SetStatus(string.Format(Resources.Message_AuthenticationRefusedExitCode, result.ExitCode));
+            VerifyResultText.Text = string.Format(Resx.Message_AuthenticationRefused, GetFriendlyExitText(result.ExitCode));
+            SetStatus(string.Format(Resx.Message_AuthenticationRefusedExitCode, result.ExitCode));
         }
 
         private void ShowVerifyFailure(string message)
@@ -1153,7 +1152,7 @@ namespace MultiOtpManager
             }
             else
             {
-                SetStatus(string.Format(Resources.Message_CommandFailed, GetFriendlyExitText(result.ExitCode)));
+                SetStatus(string.Format(Resx.Message_CommandFailed, GetFriendlyExitText(result.ExitCode)));
             }
         }
 
@@ -1307,18 +1306,18 @@ namespace MultiOtpManager
             }
             else
             {
-                sections.Add(string.Format(Resources.Output_ExitCodeWithMessage, result.ExitCode, GetFriendlyExitText(result.ExitCode)));
+                sections.Add(string.Format(Resx.Output_ExitCodeWithMessage, result.ExitCode, GetFriendlyExitText(result.ExitCode)));
             }
 
             if (!string.IsNullOrWhiteSpace(result.StandardOutput))
             {
-                sections.Add(Resources.Output_StandardOutputHeader);
+                sections.Add(Resx.Output_StandardOutputHeader);
                 sections.Add(MaskSensitiveText(result.StandardOutput.Trim()));
             }
 
             if (!string.IsNullOrWhiteSpace(result.StandardError))
             {
-                sections.Add(Resources.Output_StandardErrorHeader);
+                sections.Add(Resx.Output_StandardErrorHeader);
                 sections.Add(MaskSensitiveText(result.StandardError.Trim()));
             }
 
@@ -1359,139 +1358,139 @@ namespace MultiOtpManager
             switch (exitCode)
             {
                 case 0:
-                    return Resources.Code_0;
+                    return Resx.Code_0;
                 case 11:
-                    return Resources.Code_11;
+                    return Resx.Code_11;
                 case 12:
-                    return Resources.Code_12;
+                    return Resx.Code_12;
                 case 13:
-                    return Resources.Code_13;
+                    return Resx.Code_13;
                 case 14:
-                    return Resources.Code_14;
+                    return Resx.Code_14;
                 case 15:
-                    return Resources.Code_15;
+                    return Resx.Code_15;
                 case 16:
-                    return Resources.Code_16;
+                    return Resx.Code_16;
                 case 17:
-                    return Resources.Code_17;
+                    return Resx.Code_17;
                 case 18:
-                    return Resources.Code_18;
+                    return Resx.Code_18;
                 case 19:
-                    return Resources.Code_19;
+                    return Resx.Code_19;
                 case 20:
-                    return Resources.Code_20;
+                    return Resx.Code_20;
                 case 21:
-                    return Resources.Code_21;
+                    return Resx.Code_21;
                 case 22:
-                    return Resources.Code_22;
+                    return Resx.Code_22;
                 case 23:
-                    return Resources.Code_23;
+                    return Resx.Code_23;
                 case 24:
-                    return Resources.Code_24;
+                    return Resx.Code_24;
                 case 25:
-                    return Resources.Code_25;
+                    return Resx.Code_25;
                 case 26:
-                    return Resources.Code_26;
+                    return Resx.Code_26;
                 case 27:
-                    return Resources.Code_27;
+                    return Resx.Code_27;
                 case 28:
-                    return Resources.Code_28;
+                    return Resx.Code_28;
                 case 29:
-                    return Resources.Code_29;
+                    return Resx.Code_29;
                 case 30:
-                    return Resources.Code_30;
+                    return Resx.Code_30;
                 case 31:
-                    return Resources.Code_31;
+                    return Resx.Code_31;
                 case 32:
-                    return Resources.Code_32;
+                    return Resx.Code_32;
                 case 33:
-                    return Resources.Code_33;
+                    return Resx.Code_33;
                 case 34:
-                    return Resources.Code_34;
+                    return Resx.Code_34;
                 case 35:
-                    return Resources.Code_35;
+                    return Resx.Code_35;
                 case 36:
-                    return Resources.Code_29;
+                    return Resx.Code_29;
                 case 37:
-                    return Resources.Code_37;
+                    return Resx.Code_37;
                 case 38:
-                    return Resources.Code_38;
+                    return Resx.Code_38;
                 case 39:
-                    return Resources.Code_39;
+                    return Resx.Code_39;
                 case 40:
-                    return Resources.Code_40;
+                    return Resx.Code_40;
                 case 41:
-                    return Resources.Code_41;
+                    return Resx.Code_41;
                 case 42:
-                    return Resources.Code_42;
+                    return Resx.Code_42;
                 case 43:
-                    return Resources.Code_43;
+                    return Resx.Code_43;
                 case 58:
-                    return Resources.Code_58;
+                    return Resx.Code_58;
                 case 59:
-                    return Resources.Code_59;
+                    return Resx.Code_59;
                 case 60:
-                    return Resources.Code_60;
+                    return Resx.Code_60;
                 case 61:
-                    return Resources.Code_61;
+                    return Resx.Code_61;
                 case 62:
-                    return Resources.Code_62;
+                    return Resx.Code_62;
                 case 63:
-                    return Resources.Code_63;
+                    return Resx.Code_63;
                 case 64:
-                    return Resources.Code_64;
+                    return Resx.Code_64;
                 case 65:
-                    return Resources.Code_65;
+                    return Resx.Code_65;
                 case 66:
-                    return Resources.Code_66;
+                    return Resx.Code_66;
                 case 67:
-                    return Resources.Code_67;
+                    return Resx.Code_67;
                 case 68:
-                    return Resources.Code_68;
+                    return Resx.Code_68;
                 case 69:
-                    return Resources.Code_69;
+                    return Resx.Code_69;
                 case 70:
-                    return Resources.Code_70;
+                    return Resx.Code_70;
                 case 71:
-                    return Resources.Code_71;
+                    return Resx.Code_71;
                 case 72:
-                    return Resources.Code_72;
+                    return Resx.Code_72;
                 case 73:
-                    return Resources.Code_73;
+                    return Resx.Code_73;
                 case 79:
-                    return Resources.Code_79;
+                    return Resx.Code_79;
                 case 80:
-                    return Resources.Code_80;
+                    return Resx.Code_80;
                 case 81:
-                    return Resources.Code_81;
+                    return Resx.Code_81;
                 case 82:
-                    return Resources.Code_82;
+                    return Resx.Code_82;
                 case 88:
-                    return Resources.Code_88;
+                    return Resx.Code_88;
                 case 89:
-                    return Resources.Code_89;
+                    return Resx.Code_89;
                 case 90:
-                    return Resources.Code_90;
+                    return Resx.Code_90;
                 case 91:
-                    return Resources.Code_91;
+                    return Resx.Code_91;
                 case 92:
-                    return Resources.Code_92;
+                    return Resx.Code_92;
                 case 93:
-                    return Resources.Code_93;
+                    return Resx.Code_93;
                 case 94:
-                    return Resources.Code_94;
+                    return Resx.Code_94;
                 case 95:
-                    return Resources.Code_95;
+                    return Resx.Code_95;
                 case 96:
-                    return Resources.Code_96;
+                    return Resx.Code_96;
                 case 97:
-                    return Resources.Code_97;
+                    return Resx.Code_97;
                 case 98:
-                    return Resources.Code_98;
+                    return Resx.Code_98;
                 case 99:
-                    return Resources.Code_99;
+                    return Resx.Code_99;
                 default:
-                    return string.Format(Resources.Code_Unknown, exitCode);
+                    return string.Format(Resx.Code_Unknown, exitCode);
             }
         }
 
@@ -1499,12 +1498,12 @@ namespace MultiOtpManager
         {
             if (exception is TimeoutException)
             {
-                return Resources.Message_OperationTimedOut;
+                return Resx.Message_OperationTimedOut;
             }
 
             if (exception is OperationCanceledException)
             {
-                return Resources.Message_OperationCanceled;
+                return Resx.Message_OperationCanceled;
             }
 
             if (exception is ArgumentException)
@@ -1514,10 +1513,10 @@ namespace MultiOtpManager
 
             if (exception is System.IO.FileNotFoundException)
             {
-                return Resources.Message_MultiotpNotFound;
+                return Resx.Message_MultiotpNotFound;
             }
 
-            return string.Format(Resources.Message_OperationFailedWithType, exception.GetType().Name);
+            return string.Format(Resx.Message_OperationFailedWithType, exception.GetType().Name);
         }
 
         // Small modal dialog built in code (no XAML dependency) to collect one or
@@ -1578,7 +1577,7 @@ namespace MultiOtpManager
                 buttons.Margin = new Thickness(0, 6, 0, 0);
 
                 Button okButton = new Button();
-                okButton.Content = Resources.Prompt_Ok;
+                okButton.Content = Resx.Prompt_Ok;
                 okButton.IsDefault = true;
                 okButton.MinWidth = 88;
                 okButton.Height = 30;
@@ -1623,7 +1622,7 @@ namespace MultiOtpManager
         {
             public QrCodeDialog(string username, BitmapImage qrImage, string urlLink, string imageError)
             {
-                Title = string.Format(Resources.Dialog_QrCodeTitle, username);
+                Title = string.Format(Resx.Dialog_QrCodeTitle, username);
                 Width = 460;
                 SizeToContent = SizeToContent.Height;
                 WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -1635,7 +1634,7 @@ namespace MultiOtpManager
                 root.Margin = new Thickness(16);
 
                 TextBlock hint = new TextBlock();
-                hint.Text = Resources.Dialog_QrCodeHint;
+                hint.Text = Resx.Dialog_QrCodeHint;
                 hint.TextWrapping = TextWrapping.Wrap;
                 hint.Foreground = new SolidColorBrush(Color.FromRgb(0x22, 0x30, 0x38));
                 hint.Margin = new Thickness(0, 0, 0, 12);
@@ -1663,7 +1662,7 @@ namespace MultiOtpManager
                 else
                 {
                     TextBlock imageNote = new TextBlock();
-                    imageNote.Text = string.Format(Resources.Dialog_QrCodeErrorFallback, imageError);
+                    imageNote.Text = string.Format(Resx.Dialog_QrCodeErrorFallback, imageError);
                     imageNote.TextWrapping = TextWrapping.Wrap;
                     imageNote.Foreground = new SolidColorBrush(Color.FromRgb(0xA3, 0x31, 0x31));
                     imageNote.Margin = new Thickness(0, 0, 0, 12);
@@ -1671,7 +1670,7 @@ namespace MultiOtpManager
                 }
 
                 TextBlock urlCaption = new TextBlock();
-                urlCaption.Text = Resources.Label_ProvisioningUrl;
+                urlCaption.Text = Resx.Label_ProvisioningUrl;
                 urlCaption.FontSize = 11;
                 urlCaption.Foreground = new SolidColorBrush(Color.FromRgb(0x61, 0x70, 0x7B));
                 urlCaption.Margin = new Thickness(0, 0, 0, 3);
@@ -1692,7 +1691,7 @@ namespace MultiOtpManager
                 buttons.Margin = new Thickness(0, 6, 0, 0);
 
                 Button copyButton = new Button();
-                copyButton.Content = Resources.Button_CopyUrl;
+                copyButton.Content = Resx.Button_CopyUrl;
                 copyButton.MinWidth = 88;
                 copyButton.Height = 30;
                 copyButton.Margin = new Thickness(0, 0, 6, 0);
@@ -1701,16 +1700,16 @@ namespace MultiOtpManager
                     try
                     {
                         Clipboard.SetText(urlLink);
-                        copyButton.Content = Resources.Status_Copied;
+                        copyButton.Content = Resx.Status_Copied;
                     }
                     catch (Exception)
                     {
-                        copyButton.Content = Resources.Status_CopyFailed;
+                        copyButton.Content = Resx.Status_CopyFailed;
                     }
                 };
 
                 Button closeButton = new Button();
-                closeButton.Content = Resources.Button_Close;
+                closeButton.Content = Resx.Button_Close;
                 closeButton.IsCancel = true;
                 closeButton.MinWidth = 88;
                 closeButton.Height = 30;
