@@ -22,7 +22,6 @@ namespace MultiOtpManager
         private bool suppressLanguageChangeHandler;
         private Button[] actionButtons;
         private CancellationTokenSource currentOperationCancellation;
-        private bool refreshingUsers;
 
         public MainWindow()
         {
@@ -178,7 +177,7 @@ namespace MultiOtpManager
         {
             // Auto-refresh the Users list every time the tab becomes active so the
             // operator sees a fresh view without having to click Refresh first.
-            if (!ReferenceEquals(MainTabs.SelectedItem, UsersTab) || refreshingUsers)
+            if (!ReferenceEquals(MainTabs.SelectedItem, UsersTab))
             {
                 return;
             }
@@ -263,11 +262,6 @@ namespace MultiOtpManager
 
         private async void UsersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (refreshingUsers)
-            {
-                return;
-            }
-
             UserSummary summary = UsersListBox.SelectedItem as UserSummary;
             if (summary == null)
             {
@@ -512,9 +506,13 @@ namespace MultiOtpManager
 
         private async Task LoadUsersAsync()
         {
-            refreshingUsers = true;
-            UsersListBox.SelectedItem = null;
-            ClearUserDetail();
+            // Remember which user was selected before the refresh so we can
+            // restore the selection on the freshly rebuilt item list. Doing
+            // this by name (instead of relying on reference equality of the
+            // UserSummary instances) keeps the operator's selection alive
+            // across auto-refreshes triggered by tab switches or background
+            // actions like Delete/Disable PIN.
+            string previouslySelectedName = (UsersListBox.SelectedItem as UserSummary)?.Name;
 
             try
             {
@@ -539,7 +537,21 @@ namespace MultiOtpManager
                     .Select(delegate(string user) { return new UserSummary { Name = user }; })
                     .ToList();
 
+                // Detach the current selection before swapping ItemsSource so
+                // WPF does not briefly show stale detail text for a user that
+                // may no longer exist.
+                UsersListBox.SelectedItem = null;
                 UsersListBox.ItemsSource = users;
+
+                if (!string.IsNullOrEmpty(previouslySelectedName))
+                {
+                    UserSummary match = users.FirstOrDefault(
+                        delegate(UserSummary candidate) { return candidate != null && candidate.Name == previouslySelectedName; });
+                    if (match != null)
+                    {
+                        UsersListBox.SelectedItem = match;
+                    }
+                }
 
                 if (users.Count == 0)
                 {
@@ -551,10 +563,6 @@ namespace MultiOtpManager
             catch (Exception error)
             {
                 SetStatus(GetSafeExceptionMessage(error));
-            }
-            finally
-            {
-                refreshingUsers = false;
             }
         }
 
